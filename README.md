@@ -154,8 +154,6 @@ This can be changed to other normalization ways (Top 5 or ranks only) and can be
 
 More functions to be added ;)
 
-For Test
-
 # License
 ```
 MIT License

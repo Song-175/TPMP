@@ -1,0 +1,216 @@
+avgpool_layer_TA.c:#include "avgpool_layer_TA.h"
+avgpool_layer_TA.c:avgpool_layer_TA make_avgpool_layer_TA(int batch, int w, int h, int c)
+avgpool_layer_TA.c:    avgpool_layer_TA l = {0};
+avgpool_layer_TA.c:    l.forward_TA = forward_avgpool_layer_TA_new;
+avgpool_layer_TA.c:    l.backward_TA = backward_avgpool_layer_TA_new;
+avgpool_layer_TA.c:void resize_avgpool_layer_TA(avgpool_layer_TA *l, int w, int h)
+avgpool_layer_TA.c:void forward_avgpool_layer_TA_new(const avgpool_layer_TA l, network_TA net)
+avgpool_layer_TA.c:void backward_avgpool_layer_TA_new(const avgpool_layer_TA l, network_TA net)
+batchnorm_layer_TA.c:#include "batchnorm_layer_TA.h"
+batchnorm_layer_TA.c:#include "convolutional_layer_TA.h"
+batchnorm_layer_TA.c:void forward_batchnorm_layer_TA(layer_TA l, network_TA net)
+batchnorm_layer_TA.c:void backward_batchnorm_layer_TA(layer_TA l, network_TA net)
+connected_layer_TA.c:#include "batchnorm_layer_TA.h"
+connected_layer_TA.c:#include "connected_layer_TA.h"
+connected_layer_TA.c:#include "convolutional_layer_TA.h"
+connected_layer_TA.c:void forward_connected_layer_TA_new(layer_TA l, network_TA net)
+connected_layer_TA.c:        forward_batchnorm_layer_TA(l, net);
+connected_layer_TA.c:void backward_connected_layer_TA_new(layer_TA l, network_TA net)
+connected_layer_TA.c:        backward_batchnorm_layer_TA(l, net);
+connected_layer_TA.c:void update_connected_layer_TA_new(layer_TA l, update_args_TA a)
+connected_layer_TA.c:layer_TA make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVATION_TA activation, int batch_normalize, int adam)
+connected_layer_TA.c:    layer_TA l = {0};
+connected_layer_TA.c:    l.forward_TA = forward_connected_layer_TA_new;
+connected_layer_TA.c:    l.backward_TA = backward_connected_layer_TA_new;
+connected_layer_TA.c:    l.update_TA = update_connected_layer_TA_new;
+convolutional_layer_TA.c:#include "convolutional_layer_TA.h"
+convolutional_layer_TA.c:#include "batchnorm_layer_TA.h"
+convolutional_layer_TA.c:void swap_binary_TA(convolutional_layer_TA *l)
+convolutional_layer_TA.c:int convolutional_out_height_TA(convolutional_layer_TA l)
+convolutional_layer_TA.c:int convolutional_out_width_TA(convolutional_layer_TA l)
+convolutional_layer_TA.c:static size_t get_workspace_size(layer_TA l){
+convolutional_layer_TA.c:convolutional_layer_TA make_convolutional_layer_TA_new(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION_TA activation, int batch_normalize, int binary, int xnor, int adam, int flipped, float dot)
+convolutional_layer_TA.c:    convolutional_layer_TA l = {0};
+convolutional_layer_TA.c:    l.forward_TA = forward_convolutional_layer_TA_new;
+convolutional_layer_TA.c:    l.backward_TA = backward_convolutional_layer_TA_new;
+convolutional_layer_TA.c:    l.update_TA = update_convolutional_layer_TA_new;
+convolutional_layer_TA.c:void forward_convolutional_layer_TA_new(convolutional_layer_TA l, network_TA net)
+convolutional_layer_TA.c:        forward_batchnorm_layer_TA(l, net);
+convolutional_layer_TA.c:void backward_convolutional_layer_TA_new(convolutional_layer_TA l, network_TA net)
+convolutional_layer_TA.c:        backward_batchnorm_layer_TA(l, net);
+convolutional_layer_TA.c:void update_convolutional_layer_TA_new(convolutional_layer_TA l, update_args_TA a)
+cost_layer_TA.c:#include "cost_layer_TA.h"
+cost_layer_TA.c:cost_layer_TA make_cost_layer_TA_new(int batch, int inputs, COST_TYPE_TA cost_type, float scale, float ratio, float noobject_scale, float thresh)
+cost_layer_TA.c:    cost_layer_TA l = {0};
+cost_layer_TA.c:    l.forward_TA = forward_cost_layer_TA;
+cost_layer_TA.c:    l.backward_TA = backward_cost_layer_TA;
+cost_layer_TA.c:void forward_cost_layer_TA(cost_layer_TA l, network_TA net)
+cost_layer_TA.c:void backward_cost_layer_TA(const cost_layer_TA l, network_TA net)
+darknetp_ta.c:#include "convolutional_layer_TA.h"
+darknetp_ta.c:#include "maxpool_layer_TA.h"
+darknetp_ta.c:#include "avgpool_layer_TA.h"
+darknetp_ta.c:#include "dropout_layer_TA.h"
+darknetp_ta.c:#include "connected_layer_TA.h"
+darknetp_ta.c:#include "softmax_layer_TA.h"
+darknetp_ta.c:#include "cost_layer_TA.h"
+darknetp_ta.c:static TEE_Result make_convolutional_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_convolutional_layer_TA_new(batch, h, w, c, n, groups, size, stride, padding, activation, batch_normalize, binary, xnor, adam, flipped, dot);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_maxpool_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_maxpool_layer_TA(batch, h, w, c, size, stride, padding);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_avgpool_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_avgpool_layer_TA(batch, h, w, c);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_dropout_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_dropout_layer_TA_new(batch, inputs, probability, w, h, c, netnum);
+darknetp_ta.c:        lta.output = netta.layers[netnum-1].output;
+darknetp_ta.c:        lta.delta = netta.layers[netnum-1].delta;
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_connected_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_softmax_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_softmax_layer_TA_new(batch, inputs, groups, temperature, w, h, c, spatial, noloss);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:static TEE_Result make_cost_layer_TA_params(uint32_t param_types,
+darknetp_ta.c:    layer_TA lta = make_cost_layer_TA_new(batch, inputs, cost_type, scale, ratio, noobject_scale, thresh);
+darknetp_ta.c:    netta.layers[netnum] = lta;
+darknetp_ta.c:    // allocate net.truth when the cost layer inside TEE
+darknetp_ta.c:    int layer_i = params1[1];
+darknetp_ta.c:    load_weights_TA(vec, length, layer_i, type, additional);
+darknetp_ta.c:    int layer_i = params1[1];
+darknetp_ta.c:    save_weights_TA(weights_encrypted, length, layer_i, type);
+darknetp_ta.c:        params0[z] = netta.layers[netta.n-1].output[z];
+darknetp_ta.c:        summary_array("forward_network_back / l_pp2.output", netta.layers[netta.n-1].output, buffersize);
+darknetp_ta.c:        netta.layers[netta.n - 1].output[z] = params0[z];
+darknetp_ta.c:        netta.layers[netta.n - 1].delta[z] = params1[z];
+darknetp_ta.c:        summary_array("backward_network_back / l_pp2.output", netta.layers[netta.n - 1].output, buffersize);
+darknetp_ta.c:        summary_array("backward_network_back / l_pp2.delta", netta.layers[netta.n - 1].delta, buffersize);
+darknetp_ta.c:        params0[z] = netta.layers[netta.n - 1].output[z];
+darknetp_ta.c:        //params1[z] = netta.layers[netta.n - 1].delta[z]; zeros, removing
+darknetp_ta.c:        summary_array("backward_network_back_addidion / l_pp2.output", netta.layers[netta.n - 1].output, buffersize);
+darknetp_ta.c:        //summary_array("backward_network_back_addidion / l_pp2.delta", netta.layers[netta.n - 1].delta, buffersize);
+darknetp_ta.c:        return make_convolutional_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_maxpool_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_avgpool_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_dropout_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_connected_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_softmax_layer_TA_params(param_types, params);
+darknetp_ta.c:        return make_cost_layer_TA_params(param_types, params);
+dropout_layer_TA.c:#include "dropout_layer_TA.h"
+dropout_layer_TA.c:dropout_layer_TA make_dropout_layer_TA_new(int batch, int inputs, float probability, int w, int h, int c, int netnum)
+dropout_layer_TA.c:    dropout_layer_TA l = {0};
+dropout_layer_TA.c:    l.forward_TA = forward_dropout_layer_TA_new;
+dropout_layer_TA.c:    l.backward_TA = backward_dropout_layer_TA_new;
+dropout_layer_TA.c:void resize_dropout_layer_TA(dropout_layer_TA *l, int inputs)
+dropout_layer_TA.c:void forward_dropout_layer_TA_new(dropout_layer_TA l, network_TA net)
+dropout_layer_TA.c:void backward_dropout_layer_TA_new(dropout_layer_TA l, network_TA net)
+include/dropout_layer_TA.h:typedef layer_TA dropout_layer_TA;
+include/dropout_layer_TA.h:dropout_layer_TA make_dropout_layer_TA_new(int batch, int inputs, float probability, int w, int h, int c, int netnum);
+include/dropout_layer_TA.h:void forward_dropout_layer_TA_new(dropout_layer_TA l, network_TA net);
+include/dropout_layer_TA.h:void backward_dropout_layer_TA_new(dropout_layer_TA l, network_TA net);
+include/dropout_layer_TA.h:void resize_dropout_layer_TA(dropout_layer_TA *l, int inputs);
+include/maxpool_layer_TA.h:typedef layer_TA maxpool_layer_TA;
+include/maxpool_layer_TA.h:maxpool_layer_TA make_maxpool_layer_TA(int batch, int h, int w, int c, int size, int stride, int padding);
+include/maxpool_layer_TA.h:void resize_maxpool_layer_TA(maxpool_layer_TA *l, int w, int h);
+include/maxpool_layer_TA.h:void forward_maxpool_layer_TA_new(const maxpool_layer_TA l, network_TA net);
+include/maxpool_layer_TA.h:void backward_maxpool_layer_TA_new(const maxpool_layer_TA l, network_TA net);
+include/avgpool_layer_TA.h:typedef layer_TA avgpool_layer_TA;
+include/avgpool_layer_TA.h:avgpool_layer_TA make_avgpool_layer_TA(int batch, int w, int h, int c);
+include/avgpool_layer_TA.h:void resize_avgpool_layer_TA(avgpool_layer_TA *l, int w, int h);
+include/avgpool_layer_TA.h:void forward_avgpool_layer_TA_new(const avgpool_layer_TA l, network_TA net);
+include/avgpool_layer_TA.h:void backward_avgpool_layer_TA_new(const avgpool_layer_TA l, network_TA net);
+include/parser_TA.h:void load_weights_TA(float *vec, int length, int layer_i, char type, int transpose);
+include/parser_TA.h:void save_weights_TA(float *weights_encrypted, int length, int layer_i, char type);
+include/softmax_layer_TA.h:typedef layer_TA softmax_layer_TA;
+include/softmax_layer_TA.h:softmax_layer_TA make_softmax_layer_TA_new(int batch, int inputs, int groups, float temperature, int w, int h, int c, int spatial, int noloss);
+include/softmax_layer_TA.h:void forward_softmax_layer_TA(const softmax_layer_TA l, network_TA net);
+include/softmax_layer_TA.h:void backward_softmax_layer_TA(const softmax_layer_TA l, network_TA net);
+include/connected_layer_TA.h:void forward_connected_layer_TA_new(layer_TA l, network_TA net);
+include/connected_layer_TA.h:void backward_connected_layer_TA_new(layer_TA l, network_TA net);
+include/connected_layer_TA.h:void update_connected_layer_TA_new(layer_TA l, update_args_TA a);
+include/connected_layer_TA.h:layer_TA make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVATION_TA activation, int batch_normalize, int adam);
+include/batchnorm_layer_TA.h:void forward_batchnorm_layer_TA(layer_TA l, network_TA net);
+include/batchnorm_layer_TA.h:void backward_batchnorm_layer_TA(layer_TA l, network_TA net);
+include/convolutional_layer_TA.h:typedef layer_TA convolutional_layer_TA;
+include/convolutional_layer_TA.h:convolutional_layer_TA make_convolutional_layer_TA_new(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION_TA activation, int batch_normalize, int binary, int xnor, int adam, int flipped, float dot);
+include/convolutional_layer_TA.h:void forward_convolutional_layer_TA_new(convolutional_layer_TA l, network_TA net);
+include/convolutional_layer_TA.h:void backward_convolutional_layer_TA_new(convolutional_layer_TA l, network_TA net);
+include/convolutional_layer_TA.h:void update_convolutional_layer_TA_new(convolutional_layer_TA l, update_args_TA a);
+include/cost_layer_TA.h:typedef layer_TA cost_layer_TA;
+include/cost_layer_TA.h:cost_layer_TA make_cost_layer_TA_new(int batch, int inputs, COST_TYPE_TA cost_type, float scale, float ratio, float noobject_scale, float thresh);
+include/cost_layer_TA.h:void forward_cost_layer_TA(cost_layer_TA l, network_TA net);
+include/cost_layer_TA.h:void backward_cost_layer_TA(const cost_layer_TA l, network_TA net);
+include/darknet_TA.h:struct layer_TA;
+include/darknet_TA.h:typedef struct layer_TA layer_TA;
+include/darknet_TA.h:struct layer_TA{
+include/darknet_TA.h:    void (*forward_TA)   (struct layer_TA, struct network_TA);
+include/darknet_TA.h:    void (*backward_TA)  (struct layer_TA, struct network_TA);
+include/darknet_TA.h:    void (*update_TA)    (struct layer_TA, update_args_TA);
+include/darknet_TA.h:    int   * input_layers;
+include/darknet_TA.h:    struct layer_TA *input_layer;
+include/darknet_TA.h:    struct layer_TA *self_layer;
+include/darknet_TA.h:    struct layer_TA *output_layer;
+include/darknet_TA.h:    struct layer_TA *reset_layer;
+include/darknet_TA.h:    struct layer_TA *update_layer;
+include/darknet_TA.h:    struct layer_TA *state_layer;
+include/darknet_TA.h:    struct layer_TA *input_gate_layer;
+include/darknet_TA.h:    struct layer_TA *state_gate_layer;
+include/darknet_TA.h:    struct layer_TA *input_save_layer;
+include/darknet_TA.h:    struct layer_TA *state_save_layer;
+include/darknet_TA.h:    struct layer_TA *input_state_layer;
+include/darknet_TA.h:    struct layer_TA *state_state_layer;
+include/darknet_TA.h:    struct layer_TA *input_z_layer;
+include/darknet_TA.h:    struct layer_TA *state_z_layer;
+include/darknet_TA.h:    struct layer_TA *input_r_layer;
+include/darknet_TA.h:    struct layer_TA *state_r_layer;
+include/darknet_TA.h:    struct layer_TA *input_h_layer;
+include/darknet_TA.h:    struct layer_TA *state_h_layer;
+include/darknet_TA.h:    struct layer_TA *wz;
+include/darknet_TA.h:    struct layer_TA *uz;
+include/darknet_TA.h:    struct layer_TA *wr;
+include/darknet_TA.h:    struct layer_TA *ur;
+include/darknet_TA.h:    struct layer_TA *wh;
+include/darknet_TA.h:    struct layer_TA *uh;
+include/darknet_TA.h:    struct layer_TA *uo;
+include/darknet_TA.h:    struct layer_TA *wo;
+include/darknet_TA.h:    struct layer_TA *uf;
+include/darknet_TA.h:    struct layer_TA *wf;
+include/darknet_TA.h:    struct layer_TA *ui;
+include/darknet_TA.h:    struct layer_TA *wi;
+include/darknet_TA.h:    struct layer_TA *ug;
+include/darknet_TA.h:    struct layer_TA *wg;
+include/darknet_TA.h:void free_layer_TA(layer_TA);
+include/darknet_TA.h:    layer_TA *layers;
+maxpool_layer_TA.c:#include "maxpool_layer_TA.h"
+maxpool_layer_TA.c:image_TA get_maxpool_image_TA(maxpool_layer_TA l)
+maxpool_layer_TA.c:image_TA get_maxpool_delta_TA(maxpool_layer_TA l)
+maxpool_layer_TA.c:maxpool_layer_TA make_maxpool_layer_TA(int batch, int h, int w, int c, int size, int stride, int padding)
+maxpool_layer_TA.c:    maxpool_layer_TA l = {0};
+maxpool_layer_TA.c:    l.forward_TA = forward_maxpool_layer_TA_new;
+maxpool_layer_TA.c:    l.backward_TA = backward_maxpool_layer_TA_new;
+maxpool_layer_TA.c:void resize_maxpool_layer_TA(maxpool_layer_TA *l, int w, int h)
+maxpool_layer_TA.c:void forward_maxpool_layer_TA_new(const maxpool_layer_TA l, network_TA net)
+maxpool_layer_TA.c:void backward_maxpool_layer_TA_new(const maxpool_layer_TA l, network_TA net)
+network_TA.c:    netta.layers = calloc(netta.n, sizeof(layer_TA));
+network_TA.c:        ta_net_input = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
+network_TA.c:        ta_net_delta = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
+network_TA.c:        layer_TA l = netta.layers[i];
+network_TA.c:        layer_TA l = netta.layers[i];
+network_TA.c:        if(netta.layers[i].cost){
+network_TA.c:            sum += netta.layers[i].cost[0];
+network_TA.c:        layer_TA l = netta.layers[i];
+network_TA.c:            layer_TA prev = netta.layers[i-1];
+network_TA.c:        // when the first layer in TEE is a Dropout layer
+parser_TA.c:void load_weights_TA(float *vec, int length, int layer_i, char type, int transpose)
+parser_TA.c:    layer_TA l = netta.layers[layer_i];
+parser_TA.c:void save_weights_TA(float *weights_encrypted, int length, int layer_i, char type)
+parser_TA.c:    layer_TA l = netta.layers[layer_i];
+softmax_layer_TA.c:#include "softmax_layer_TA.h"
+softmax_layer_TA.c:softmax_layer_TA make_softmax_layer_TA_new(int batch, int inputs, int groups, float temperature, int w, int h, int c, int spatial, int noloss)
+softmax_layer_TA.c:    softmax_layer_TA l = {0};
+softmax_layer_TA.c:    l.forward_TA = forward_softmax_layer_TA;
+softmax_layer_TA.c:    l.backward_TA = backward_softmax_layer_TA;
+softmax_layer_TA.c:void forward_softmax_layer_TA(const softmax_layer_TA l, network_TA net)
+softmax_layer_TA.c:void backward_softmax_layer_TA(const softmax_layer_TA l, network_TA net)

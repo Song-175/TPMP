@@ -156,6 +156,12 @@ static TEE_Result make_netowork_TA_params(uint32_t param_types,
     float hue = params1[13];
     float power = params1[14];
 
+    int i;
+
+    for (i=0; i<16; i++) {
+	    printf("params0[%d] : %ld\n", i, params0[i]);
+    }
+
     make_network_TA(n, learning_rate, momentum, decay, time_steps, notruth, batch, subdivisions, random, adam, B1, B2, eps, h, w, c, inputs, max_crop, min_crop, max_ratio, min_ratio, center, clip, angle, aspect, saturation, exposure, hue, burn_in, power, max_batches);
 
     return TEE_SUCCESS;

@@ -72,6 +72,9 @@ void forward_network_TA()
         ta_net_input = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
         ta_net_delta = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
 
+	printf("===== Initialize =====\n");
+        printf("Input : %ld \n", (sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch));
+        printf("Delta : %ld\n",  (sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch));
         if(netta.workspace_size){
             printf("workspace_size=%ld\n", netta.workspace_size);
             netta.workspace = calloc(1, netta.workspace_size);
@@ -89,7 +92,17 @@ void forward_network_TA()
         }
 
         l.forward_TA(l, netta);
+	
+	//print summary
+	printf("===== Layer [%d] =====\n", i);
+	printf("Output : %ld\n", (l.outputs*netta.batch));
+	printf("Layer type : %d\n", netta.layers[i].type);
+	printf("Pointing Address : 0x%x\n", netta.layers[i].output);
+	printf("Actual Address : 0x%x\n", &(netta.layers[i].output));
+	printf("Value: %ld\n", *(netta.layers[i].output));
 
+
+	//	
         if(debug_summary_pass == 1){
             summary_array("forward_network / l.output", l.output, l.outputs*netta.batch);
         }
@@ -107,7 +120,6 @@ void forward_network_TA()
                 ta_net_output[z] = l.output[z];
             }
         }
-
         // if(i == netta.n - 1)  // ready to back REE for the rest forward pass
         // {
         //     ta_net_input = malloc(sizeof(float)*l.outputs*l.batch);
@@ -115,6 +127,18 @@ void forward_network_TA()
         //         ta_net_input[z] = netta.input[z];
         //     }
         // }
+	
+	// free unusing layer custom added
+	int j;
+	for (j=i+1; j<netta.n; j++) {
+		if (l.output == netta.layers[j].output)
+			break;
+		printf("%d\n", j);
+	}
+	if (j == netta.n) {
+		printf("0x%x was freed\n", l.output);
+		free(l.output);
+	}
     }
 
     calc_network_cost_TA();
