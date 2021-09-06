@@ -11,6 +11,9 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
+#include "layers_TA.h"
+
+
 network_TA netta;
 int roundnum = 0;
 float err_sum = 0;
@@ -19,6 +22,10 @@ float avg_loss = -1;
 float *ta_net_input;
 float *ta_net_delta;
 float *ta_net_output;
+
+///////////////////////////
+Param_ST *layer_param;
+
 
 void make_network_TA(int n, float learning_rate, float momentum, float decay, int time_steps, int notruth, int batch, int subdivisions, int random, int adam, float B1, float B2, float eps, int h, int w, int c, int inputs, int max_crop, int min_crop, float max_ratio, float min_ratio, int center, float clip, float angle, float aspect, float saturation, float exposure, float hue, int burn_in, float power, int max_batches)
 {
@@ -63,6 +70,9 @@ void make_network_TA(int n, float learning_rate, float momentum, float decay, in
     netta.workspace_size = 0;
 
     //netta.truth = net->truth; ////// ing network.c train_network
+
+   /////////////////////////////////////// 
+    layer_param = (Param_ST *)malloc(sizeof(Param_ST) * n);
 }
 
 void forward_network_TA()
@@ -87,20 +97,28 @@ void forward_network_TA()
         netta.index = i;
         layer_TA l = netta.layers[i];
 
-        if(l.delta){
-            fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
-        }
-
-        l.forward_TA(l, netta);
-	
 	//print summary
 	printf("===== Layer [%d] =====\n", i);
 	printf("Output : %ld\n", (l.outputs*netta.batch));
 	printf("Layer type : %d\n", netta.layers[i].type);
 	printf("Pointing Address : 0x%x\n", netta.layers[i].output);
 	printf("Actual Address : 0x%x\n", &(netta.layers[i].output));
-	printf("Value: %ld\n", *(netta.layers[i].output));
+	printf("Size : %ld\n", netta.layers[i].outputs);
 
+	// free unusing layer custom added
+	if(i >= 2) {
+		if ((netta.layers[i-2].output != netta.layers[i-1].output) && (netta.layers[i-2].output != netta.layers[i].output)) {
+			printf("Layer[%d].output expired Add %p\n", i-2, netta.layers[i-2].output);
+			free(netta.layers[i-2].output);
+		}
+	}
+	//////////
+
+        if(l.delta){
+            fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
+        }
+
+        l.forward_TA(l, netta);
 
 	//	
         if(debug_summary_pass == 1){
@@ -127,18 +145,12 @@ void forward_network_TA()
         //         ta_net_input[z] = netta.input[z];
         //     }
         // }
-	
-	// free unusing layer custom added
-	int j;
-	for (j=i+1; j<netta.n; j++) {
-		if (l.output == netta.layers[j].output)
-			break;
-		printf("%d\n", j);
+	//
+	// /////////////////////////////////////////////
+	if (layer_param[i].type == CONNECTED_TA) {
+		printf("Type : %d\n", layer_param[i].type);
 	}
-	if (j == netta.n) {
-		printf("0x%x was freed\n", l.output);
-		free(l.output);
-	}
+
     }
 
     calc_network_cost_TA();

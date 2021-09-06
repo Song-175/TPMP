@@ -19,13 +19,15 @@
 #include "parser_TA.h"
 #include "math_TA.h"
 
+#include "layers_TA.h"
+
 #define LOOKUP_SIZE 4096
 
 float *netta_truth;
 int netnum = 0;
 int debug_summary_com = 0;
 int debug_summary_pass = 0;
-int norm_output = 1;
+int norm_output = 0;	//1
 
 
 void summary_array(char *print_name, float *arr, int n)
@@ -157,10 +159,6 @@ static TEE_Result make_netowork_TA_params(uint32_t param_types,
     float power = params1[14];
 
     int i;
-
-    for (i=0; i<16; i++) {
-	    printf("params0[%d] : %ld\n", i, params0[i]);
-    }
 
     make_network_TA(n, learning_rate, momentum, decay, time_steps, notruth, batch, subdivisions, random, adam, B1, B2, eps, h, w, c, inputs, max_crop, min_crop, max_ratio, min_ratio, center, clip, angle, aspect, saturation, exposure, hue, burn_in, power, max_batches);
 
@@ -360,7 +358,18 @@ static TEE_Result make_connected_layer_TA_params(uint32_t param_types,
 
     layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
     netta.layers[netnum] = lta;
+    
+    layer_param[netnum].type = CONNECTED_TA;
+    layer_param[netnum].batch = batch;
+    layer_param[netnum].p[0].i = inputs;
+    
+    printf("batch : %d \t layer_param : %d\n", batch, layer_param[netnum].batch);
+    printf("inputs : %d\tlayer_param : %d\n", inputs, layer_param[netnum].p[0].i);
+    printf("netnum : %d\n", netnum);
+
     netnum++;
+
+
 
     return TEE_SUCCESS;
 }
@@ -870,6 +879,7 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
     }
 
     for(int z=0; z<buffersize; z++){
+	printf("[%d] %ld\n", z, ta_net_output[z]);
         params0[z] = ta_net_output[z];
     }
 
