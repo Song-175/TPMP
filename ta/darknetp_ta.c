@@ -358,14 +358,25 @@ static TEE_Result make_connected_layer_TA_params(uint32_t param_types,
 
     layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
     netta.layers[netnum] = lta;
-    
+ 
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
     layer_param[netnum].type = CONNECTED_TA;
-    layer_param[netnum].batch = batch;
-    layer_param[netnum].p[0].i = inputs;
+    layer_param[netnum].batch = passarg[0];
+    layer_param[netnum].p[0].i = passarg[1];
+    layer_param[netnum].p[1].i = passarg[2];
+    layer_param[netnum].p[2].i = passarg[3];
+    layer_param[netnum].p[3].i = passarg[4];
+
+    acti = params[1].memref.buffer;
+    layer_param[netnum].p[4].A = get_activation_TA(acti);
+
     
     printf("batch : %d \t layer_param : %d\n", batch, layer_param[netnum].batch);
     printf("inputs : %d\tlayer_param : %d\n", inputs, layer_param[netnum].p[0].i);
     printf("netnum : %d\n", netnum);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     netnum++;
 

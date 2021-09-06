@@ -11,8 +11,19 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
+//////////////////////////////////////////////
 #include "layers_TA.h"
 
+#include "convolutional_layer_TA.h"
+#include "maxpool_layer_TA.h"
+#include "avgpool_layer_TA.h"
+#include "dropout_layer_TA.h"
+
+#include "connected_layer_TA.h"
+#include "softmax_layer_TA.h"
+#include "cost_layer_TA.h"
+#include "network_TA.h"
+//////////////////////////////////////////////
 
 network_TA netta;
 int roundnum = 0;
@@ -25,7 +36,7 @@ float *ta_net_output;
 
 ///////////////////////////
 Param_ST *layer_param;
-
+//////////////////////////////
 
 void make_network_TA(int n, float learning_rate, float momentum, float decay, int time_steps, int notruth, int batch, int subdivisions, int random, int adam, float B1, float B2, float eps, int h, int w, int c, int inputs, int max_crop, int min_crop, float max_ratio, float min_ratio, int center, float clip, float angle, float aspect, float saturation, float exposure, float hue, int burn_in, float power, int max_batches)
 {
@@ -146,11 +157,14 @@ void forward_network_TA()
         //     }
         // }
 	//
-	// /////////////////////////////////////////////
+	
+	///////////////////////////////////////////////////////////
 	if (layer_param[i].type == CONNECTED_TA) {
-		printf("Type : %d\n", layer_param[i].type);
+		layer_TA temp_l = make_connected_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].A);
+		printf("temp_l type : %d\n", temp_l.type);
 	}
-
+	///////////////////////////////////////////////////////////
     }
 
     calc_network_cost_TA();
