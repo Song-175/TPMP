@@ -159,15 +159,52 @@ void forward_network_TA()
 	//
 	
 	///////////////////////////////////////////////////////////
-	if (layer_param[i].type == CONNECTED_TA) {
-		layer_TA temp_l = make_connected_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].A);
-		printf("temp_l type : %d\n", temp_l.type);
+	layer_TA lta;
+	switch(layer_param[i].type) {
+		case CONVOLUTIONAL_TA :
+			lta = make_convolutional_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				       	layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
+				       	layer_param[i].p[6].i, layer_param[i].p[7].i, layer_param[i].p[8].A, layer_param[i].p[9].i,
+				       	layer_param[i].p[10].i, layer_param[i].p[11].i, layer_param[i].p[12].i, layer_param[i].p[13].i,
+				        layer_param[i].p[14].f);
+			break;
+		case MAXPOOL_TA :
+			lta = make_maxpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i);
+			break;
+		case AVGPOOL_TA :
+			lta = make_avgpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				       layer_param[i].p[2].i);
+			break;
+		case DROPOUT_TA :
+			lta = make_dropout_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].f,
+				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].f, layer_param[i].p[5].i);
+			break;
+		case CONNECTED_TA :
+			lta = make_connected_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].A, layer_param[i].p[3].i, layer_param[i].p[4].i);
+			break;
+		case SOFTMAX_TA :
+			lta = make_softmax_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].f, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
+				       	layer_param[i].p[6].i, layer_param[i].p[7].i);
+			break;
+		case COST_TA :
+			lta = make_cost_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].A,
+				       	layer_param[i].p[2].f, layer_param[i].p[3].f, layer_param[i].p[4].f, layer_param[i].p[5].f);
+			break;
+		default :
+			printf("Can't find layer type\n");
+			break;
 	}
+	printf("Size : %ld\n", lta.outputs);
+	printf("Type : %d\n", lta.type);
+	lta.forward_TA(lta, netta);
 	///////////////////////////////////////////////////////////
     }
 
     calc_network_cost_TA();
+    free(layer_param);
 }
 
 
