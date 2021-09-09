@@ -24,7 +24,16 @@ typedef struct Param_ST{
 	union param p[16];
 }Param_ST;
 
+typedef struct Param_WI {
+    float *vec;
+    int length;
+    int layer_i;
+    int additional;
+    char type;
+} Param_WI;
+
 extern Param_ST *layer_param;
+extern Param_WI *weight_param;
 
 #endif
 

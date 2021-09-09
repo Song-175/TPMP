@@ -61,10 +61,12 @@ load_args get_base_args(network *net)
 network *load_network(char *cfg, char *weights, int clear)
 {
     network *net = parse_network_cfg(cfg);
+    printf("===== parse_network_cfg =====\n");
 
 
     if(weights && weights[0] != 0){
         load_weights(net, weights);
+        printf("===== load_weights =====\n");
     }
     if(clear) (*net->seen) = 0;
     return net;
@@ -251,6 +253,9 @@ void forward_network(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
+
+        ///////////////////////////////////////////
+        printf("layer[%d]\n", i);
 
         if(i > partition_point1 && i <= partition_point2)
         {

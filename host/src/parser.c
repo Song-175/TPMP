@@ -1616,12 +1616,14 @@ void load_weights_upto(network *net, char *filename, int start, int cutoff)
         // load weights of the NW side
         if(i <= partition_point1 || i > partition_point2){
             load_weights_layer(l, fp, transpose);
+            printf("\nlayer[%d] weight loaded", i);
 
-        // load weights of the SW side
         }
+        // load weights of the SW side
         else{
             int layerTA_i = i - partition_point1 - 1;
-            comm_load_weights_layer(l, fp, layerTA_i, transpose);
+            //comm_load_weights_layer(l, fp, layerTA_i, transpose);
+            printf("layer[%d] weight params are loaded into the TEE\n", i);
         }
     }
 

@@ -86,7 +86,6 @@ void load_weights_TA(float *vec, int length, int layer_i, char type, int transpo
         copy_cpu_TA(length, tempvec, 1, l.rolling_variance, 1);
     }
 
-
     if(l.type == CONVOLUTIONAL_TA || l.type == DECONVOLUTIONAL_TA){
         if(l.flipped && type == 'w'){
             transpose_matrix_TA(l.weights, l.c*l.size*l.size, l.n);

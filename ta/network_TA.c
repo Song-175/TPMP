@@ -22,7 +22,8 @@
 #include "connected_layer_TA.h"
 #include "softmax_layer_TA.h"
 #include "cost_layer_TA.h"
-#include "network_TA.h"
+
+#include "parser_TA.h"
 //////////////////////////////////////////////
 
 network_TA netta;
@@ -36,6 +37,7 @@ float *ta_net_output;
 
 ///////////////////////////
 Param_ST *layer_param;
+Param_WI *weight_param;
 //////////////////////////////
 
 void make_network_TA(int n, float learning_rate, float momentum, float decay, int time_steps, int notruth, int batch, int subdivisions, int random, int adam, float B1, float B2, float eps, int h, int w, int c, int inputs, int max_crop, int min_crop, float max_ratio, float min_ratio, int center, float clip, float angle, float aspect, float saturation, float exposure, float hue, int burn_in, float power, int max_batches)
@@ -84,10 +86,12 @@ void make_network_TA(int n, float learning_rate, float momentum, float decay, in
 
    /////////////////////////////////////// 
     layer_param = (Param_ST *)malloc(sizeof(Param_ST) * n);
+    weight_param = (Param_WI *)malloc(sizeof(weight_param) * n);
 }
 
 void forward_network_TA()
 {
+    /*
     if(roundnum == 0){
         // ta_net_input malloc so not destroy before addition backward
         ta_net_input = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
@@ -101,21 +105,68 @@ void forward_network_TA()
             netta.workspace = calloc(1, netta.workspace_size);
         }
     }
-
+    */
     roundnum++;
+    printf("First\n");
     int i;
     for(i = 0; i < netta.n; ++i){
         netta.index = i;
-        layer_TA l = netta.layers[i];
+        layer_TA l;
 
+	///////////////////////////////////////////////////////////
+    	switch(layer_param[i].type) {
+       		case CONVOLUTIONAL_TA :
+    			l = make_convolutional_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				       	layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
+				       	layer_param[i].p[6].i, layer_param[i].p[7].i, layer_param[i].p[8].A, layer_param[i].p[9].i,
+				       	layer_param[i].p[10].i, layer_param[i].p[11].i, layer_param[i].p[12].i, layer_param[i].p[13].i,
+				        layer_param[i].p[14].f);
+                printf("successfully make the Layer[%d]\n", i);
+                netta.layers[i] = l;
+                load_weights_TA(weight_param[i].vec, weight_param[i].length, i, weight_param[i].type, weight_param[i].additional);
+                
+	    		break;
+    		case MAXPOOL_TA :
+    			l = make_maxpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i);
+	    		break;
+    		case AVGPOOL_TA :
+    			l = make_avgpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				       layer_param[i].p[2].i);
+	    		break;
+    		case DROPOUT_TA :
+	    		l = make_dropout_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].f,
+				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].f, layer_param[i].p[5].i);
+		    	break;
+    		case CONNECTED_TA :
+	    		netta.layers[i] = make_connected_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].A, layer_param[i].p[3].i, layer_param[i].p[4].i);
+                load_weights_TA(weight_param[i].vec, weight_param[i].length, i, weight_param[i].type, weight_param[i].additional);
+                l = netta.layers[i];
+		    	break;
+    		case SOFTMAX_TA :
+	    		l = make_softmax_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
+				        layer_param[i].p[2].f, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
+				       	layer_param[i].p[6].i, layer_param[i].p[7].i);
+		    break;
+    		case COST_TA :
+	    		l = make_cost_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].A,
+				       	layer_param[i].p[2].f, layer_param[i].p[3].f, layer_param[i].p[4].f, layer_param[i].p[5].f);
+		    	break;
+    		default :
+	    		printf("Can't find layer type\n");
+		    	break;
+    	}
+	///////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////
 	//print summary
-	printf("===== Layer [%d] =====\n", i);
-	printf("Output : %ld\n", (l.outputs*netta.batch));
-	printf("Layer type : %d\n", netta.layers[i].type);
-	printf("Pointing Address : 0x%x\n", netta.layers[i].output);
-	printf("Actual Address : 0x%x\n", &(netta.layers[i].output));
-	printf("Size : %ld\n", netta.layers[i].outputs);
+    	printf("===== Layer [%d] =====\n", i);
+	    printf("Output : %ld\n", (l.outputs*netta.batch));
+    	printf("Type : %d\n", l.type);
+    	printf("Size : %ld\n", l.outputs);
 
+    /*
 	// free unusing layer custom added
 	if(i >= 2) {
 		if ((netta.layers[i-2].output != netta.layers[i-1].output) && (netta.layers[i-2].output != netta.layers[i].output)) {
@@ -123,7 +174,8 @@ void forward_network_TA()
 			free(netta.layers[i-2].output);
 		}
 	}
-	//////////
+	/////////////////////////////////////////////
+    */
 
         if(l.delta){
             fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
@@ -158,49 +210,6 @@ void forward_network_TA()
         // }
 	//
 	
-	///////////////////////////////////////////////////////////
-	layer_TA lta;
-	switch(layer_param[i].type) {
-		case CONVOLUTIONAL_TA :
-			lta = make_convolutional_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				       	layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
-				       	layer_param[i].p[6].i, layer_param[i].p[7].i, layer_param[i].p[8].A, layer_param[i].p[9].i,
-				       	layer_param[i].p[10].i, layer_param[i].p[11].i, layer_param[i].p[12].i, layer_param[i].p[13].i,
-				        layer_param[i].p[14].f);
-			break;
-		case MAXPOOL_TA :
-			lta = make_maxpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i);
-			break;
-		case AVGPOOL_TA :
-			lta = make_avgpool_layer_TA(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				       layer_param[i].p[2].i);
-			break;
-		case DROPOUT_TA :
-			lta = make_dropout_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].f,
-				        layer_param[i].p[2].i, layer_param[i].p[3].i, layer_param[i].p[4].f, layer_param[i].p[5].i);
-			break;
-		case CONNECTED_TA :
-			lta = make_connected_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				        layer_param[i].p[2].A, layer_param[i].p[3].i, layer_param[i].p[4].i);
-			break;
-		case SOFTMAX_TA :
-			lta = make_softmax_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].i,
-				        layer_param[i].p[2].f, layer_param[i].p[3].i, layer_param[i].p[4].i, layer_param[i].p[5].i,
-				       	layer_param[i].p[6].i, layer_param[i].p[7].i);
-			break;
-		case COST_TA :
-			lta = make_cost_layer_TA_new(layer_param[i].batch, layer_param[i].p[0].i, layer_param[i].p[1].A,
-				       	layer_param[i].p[2].f, layer_param[i].p[3].f, layer_param[i].p[4].f, layer_param[i].p[5].f);
-			break;
-		default :
-			printf("Can't find layer type\n");
-			break;
-	}
-	printf("Size : %ld\n", lta.outputs);
-	printf("Type : %d\n", lta.type);
-	lta.forward_TA(lta, netta);
-	///////////////////////////////////////////////////////////
     }
 
     calc_network_cost_TA();

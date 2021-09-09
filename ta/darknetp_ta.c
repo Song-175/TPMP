@@ -219,7 +219,8 @@ static TEE_Result make_convolutional_layer_TA_params(uint32_t param_types,
     ACTIVATION_TA activation = get_activation_TA(acti);
 
     layer_TA lta = make_convolutional_layer_TA_new(batch, h, w, c, n, groups, size, stride, padding, activation, batch_normalize, binary, xnor, adam, flipped, dot);
-    netta.layers[netnum] = lta;
+    //netta.layers[netnum] = lta;
+
     if (lta.workspace_size > netta.workspace_size)
         netta.workspace_size = lta.workspace_size;
 
@@ -277,8 +278,8 @@ static TEE_Result make_maxpool_layer_TA_params(uint32_t param_types,
     int stride = params0[5];
     int padding = params0[6];
 
-    layer_TA lta = make_maxpool_layer_TA(batch, h, w, c, size, stride, padding);
-    netta.layers[netnum] = lta;
+    //layer_TA lta = make_maxpool_layer_TA(batch, h, w, c, size, stride, padding);
+    //netta.layers[netnum] = lta;
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     layer_param[netnum].type = MAXPOOL_TA;
@@ -319,8 +320,8 @@ static TEE_Result make_avgpool_layer_TA_params(uint32_t param_types,
     int w = params0[2];
     int c = params0[3];
 
-    layer_TA lta = make_avgpool_layer_TA(batch, h, w, c);
-    netta.layers[netnum] = lta;
+    //layer_TA lta = make_avgpool_layer_TA(batch, h, w, c);
+    //netta.layers[netnum] = lta;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -387,7 +388,7 @@ static TEE_Result make_dropout_layer_TA_params(uint32_t param_types,
         lta.delta = netta.layers[netnum - 1].delta;
     }
 
-    netta.layers[netnum] = lta;
+    //netta.layers[netnum] = lta;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -436,7 +437,9 @@ static TEE_Result make_connected_layer_TA_params(uint32_t param_types,
     acti = params[1].memref.buffer;
     ACTIVATION_TA activation = get_activation_TA(acti);
 
-    layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
+    //layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
+    layer_TA lta;
+    lta.weights = calloc(outputs*inputs, sizeof(float));
     netta.layers[netnum] = lta;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -485,8 +488,8 @@ static TEE_Result make_softmax_layer_TA_params(uint32_t param_types,
     int noloss = params0[7];
     float temperature = params[1].value.a;
 
-    layer_TA lta = make_softmax_layer_TA_new(batch, inputs, groups, temperature, w, h, c, spatial, noloss);
-    netta.layers[netnum] = lta;
+    //layer_TA lta = make_softmax_layer_TA_new(batch, inputs, groups, temperature, w, h, c, spatial, noloss);
+    //netta.layers[netnum] = lta;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -539,8 +542,8 @@ static TEE_Result make_cost_layer_TA_params(uint32_t param_types,
     cost_t = params[2].memref.buffer;
     ACTIVATION_TA cost_type = get_cost_type_TA(cost_t);
 
-    layer_TA lta = make_cost_layer_TA_new(batch, inputs, cost_type, scale, ratio, noobject_scale, thresh);
-    netta.layers[netnum] = lta;
+    //layer_TA lta = make_cost_layer_TA_new(batch, inputs, cost_type, scale, ratio, noobject_scale, thresh);
+    //netta.layers[netnum] = lta;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -590,7 +593,14 @@ static TEE_Result transfer_weights_TA_params(uint32_t param_types,
 
     char type = params[2].value.a;
 
-    load_weights_TA(vec, length, layer_i, type, additional);
+    //load_weights_TA(vec, length, layer_i, type, additional);
+
+    //////////////////////////////
+    weight_param[layer_i].vec = vec;
+    weight_param[layer_i].length = length;
+    weight_param[layer_i].additional = additional;
+    weight_param[layer_i].type = type;
+    /////////////////////////////////
 
     return TEE_SUCCESS;
 }
@@ -638,6 +648,7 @@ static TEE_Result forward_network_TA_params(uint32_t param_types,
     //TEE_PARAM_TYPE_VALUE_INPUT
 
     //DMSG("has been called");
+    printf("forward_network_TA_params\n");
 
     if (param_types != exp_param_types)
         return TEE_ERROR_BAD_PARAMETERS;
