@@ -27,6 +27,7 @@ int debug_summary_com = 0;
 int debug_summary_pass = 0;
 int norm_output = 1;
 
+extern int layernum;
 
 void summary_array(char *print_name, float *arr, int n)
 {
@@ -558,8 +559,11 @@ static TEE_Result forward_network_back_TA_params(uint32_t param_types,
 
     float *params0 = params[0].memref.buffer;
     int buffersize = params[0].memref.size / sizeof(float);
+
+    printf("forward_network_TA_params: layernum:%d\n", layernum-1);
     for(int z=0; z<buffersize; z++){
-        params0[z] = netta.layers[netta.n-1].output[z];
+//        params0[z] = netta.layers[netta.n-1].output[z];
+        params0[z] = netta.layers[layernum-1].output[z];
     }
 
     // ?????
@@ -878,6 +882,8 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
                                       uint32_t param_types, TEE_Param params[4])
 {
     (void)&sess_ctx; /* Unused parameter */
+    
+    printf("TA_InvokeCommandEntryPoint: %d\n", cmd_id);
 
     switch (cmd_id) {
         case MAKE_NETWORK_CMD:
@@ -911,7 +917,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
         return transfer_weights_TA_params(param_types, params);
 
         case SAVE_WEI_CMD:
-            return save_weights_TA_params(param_types, params);
+        return save_weights_TA_params(param_types, params);
 
         case FORWARD_CMD:
         return forward_network_TA_params(param_types, params);

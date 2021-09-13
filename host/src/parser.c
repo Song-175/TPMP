@@ -217,8 +217,11 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     layer.dot = option_find_float_quiet(options, "dot", 0);
 
 
+    printf("parse_convolutional: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", 
+            batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam); 
+
     if(count_global > partition_point1 && count_global <= partition_point2){
-    make_convolutional_layer_CA(batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam, layer.flipped, layer.dot);
+//    make_convolutional_layer_CA(batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam, layer.flipped, layer.dot);
     }
 
     return layer;
@@ -283,9 +286,12 @@ layer parse_connected(list *options, size_params params)
 
     layer l = make_connected_layer(params.batch, params.inputs, output, activation, batch_normalize, params.net->adam);
 
+    printf("parse_conneted: %d, %d, %d, %d, %d, %d\n", 
+            params.batch, params.inputs, output, activation, batch_normalize, params.net->adam); 
+
     // send parameters into TA
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_connected_layer_CA(params.batch, params.inputs, output, activation, batch_normalize, params.net->adam);
+//        make_connected_layer_CA(params.batch, params.inputs, output, activation, batch_normalize, params.net->adam);
     }
     return l;
 }
@@ -303,8 +309,10 @@ layer parse_softmax(list *options, size_params params)
     l.spatial = option_find_float_quiet(options, "spatial", 0);
     l.noloss =  option_find_int_quiet(options, "noloss", 0);
 
+    printf("parse_softmax: %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
+            params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss); 
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_softmax_layer_CA(params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss);
+//        make_softmax_layer_CA(params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss);
     }
 
     return l;
@@ -464,8 +472,11 @@ cost_layer parse_cost(list *options, size_params params)
     layer.noobject_scale =  option_find_float_quiet(options, "noobj", 1);
     layer.thresh =  option_find_float_quiet(options, "thresh",0);
 
+    printf("parse_cost: %d, %d, %d, %f, %f, %f, %f\n", 
+            params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh); 
+
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_cost_layer_CA(params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh);
+//        make_cost_layer_CA(params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh);
     }
 
     return layer;
@@ -528,8 +539,11 @@ maxpool_layer parse_maxpool(list *options, size_params params)
 
     maxpool_layer layer = make_maxpool_layer(batch,h,w,c,size,stride,padding);
 
+    printf("parse_maxpool: %d, %d, %d, %d, %d, %d, %d\n",
+        batch,h,w,c,size,stride,padding);
+
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_maxpool_layer_CA(batch,h,w,c,size,stride,padding);
+//        make_maxpool_layer_CA(batch,h,w,c,size,stride,padding);
     }
 
     return layer;
@@ -546,8 +560,12 @@ avgpool_layer parse_avgpool(list *options, size_params params)
 
     avgpool_layer layer = make_avgpool_layer(batch,w,h,c);
 
+    printf("parse_avgpool: %d, %d, %d, %d\n",
+        batch,h,w,c);
+
+
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_avgpool_layer_CA(batch,h,w,c);
+//        make_avgpool_layer_CA(batch,h,w,c);
     }
 
     return layer;
@@ -564,8 +582,11 @@ dropout_layer parse_dropout(list *options, size_params params, float *net_prev_o
     layer.output = net_prev_output;
     layer.delta = net_prev_delta;
 
+    printf("parse_dropout: %d, %d, %f, %d, %d, %d, %d, %x, %x\n",
+            params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta); 
+
     if(count_global > partition_point1 && count_global <= partition_point2){
-        make_dropout_layer_CA(params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta);
+//        make_dropout_layer_CA(params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta);
     }
 
     return layer;
@@ -1345,17 +1366,19 @@ void load_connected_weights_comm(layer l, FILE *fp, int i, int transpose)
     fread(l.biases, sizeof(float), l.outputs, fp);
     fread(l.weights, sizeof(float), l.outputs*l.inputs, fp);
 
-    transfer_weights_CA(l.biases, l.outputs, i, 'b', 0);
-    transfer_weights_CA(l.weights, l.outputs*l.inputs, i, 'w', transpose);
+    // store transpose in network
+    l.transpose = transpose;
+//    transfer_weights_CA(l.biases, l.outputs, i, 'b', 0);
+//    transfer_weights_CA(l.weights, l.outputs*l.inputs, i, 'w', transpose);
 
     if (l.batch_normalize && (!l.dontloadscales)){
         fread(l.scales, sizeof(float), l.outputs, fp);
         fread(l.rolling_mean, sizeof(float), l.outputs, fp);
         fread(l.rolling_variance, sizeof(float), l.outputs, fp);
 
-        transfer_weights_CA(l.scales, l.outputs, i, 's', 0);
-        transfer_weights_CA(l.rolling_mean, l.outputs, i, 'm', 0);
-        transfer_weights_CA(l.rolling_variance, l.outputs, i, 'v', 0);
+//        transfer_weights_CA(l.scales, l.outputs, i, 's', 0);
+//        transfer_weights_CA(l.rolling_mean, l.outputs, i, 'm', 0);
+//        transfer_weights_CA(l.rolling_variance, l.outputs, i, 'v', 0);
     }
 }
 

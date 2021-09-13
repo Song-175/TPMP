@@ -13,6 +13,7 @@
 
 network_TA netta;
 int roundnum = 0;
+int layernum = 0;
 float err_sum = 0;
 float avg_loss = -1;
 
@@ -67,6 +68,55 @@ void make_network_TA(int n, float learning_rate, float momentum, float decay, in
 
 void forward_network_TA()
 {
+
+    if(roundnum == 0){
+        // ta_net_input malloc so not destroy before addition backward
+        ta_net_input = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
+        ta_net_delta = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
+
+        if(netta.workspace_size){
+            printf("workspace_size=%ld\n", netta.workspace_size);
+            netta.workspace = calloc(1, netta.workspace_size);
+        }
+    }
+    roundnum++;
+
+    netta.index = layernum;
+
+    layer_TA l = netta.layers[layernum];
+
+    if(l.delta){
+        fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
+    }
+
+    l.forward_TA(l, netta);
+
+    if(debug_summary_pass == 1){
+        summary_array("forward_network / l.output", l.output, l.outputs*netta.batch);
+    }
+
+//        netta.input = l.output;
+
+    if(l.truth) {
+        netta.truth = l.output;
+    }
+    //output of the network (for predict)
+    // &&
+    if(!netta.train && l.type == SOFTMAX_TA){
+        ta_net_output = malloc(sizeof(float)*l.outputs*1);
+        for(int z=0; z<l.outputs*1; z++){
+            ta_net_output[z] = l.output[z];
+        }
+    }
+
+    layernum++;
+
+    if(layernum == netta.n){    
+        calc_network_cost_TA();
+    }
+
+    /////////////////////////////////////////////////////
+/*
     if(roundnum == 0){
         // ta_net_input malloc so not destroy before addition backward
         ta_net_input = malloc(sizeof(float) * netta.layers[0].inputs * netta.layers[0].batch);
@@ -81,6 +131,7 @@ void forward_network_TA()
     roundnum++;
     int i;
     for(i = 0; i < netta.n; ++i){
+//        printf("forward_network_TA: layer num: %d\n", i);
         netta.index = i;
         layer_TA l = netta.layers[i];
 
@@ -118,6 +169,7 @@ void forward_network_TA()
     }
 
     calc_network_cost_TA();
+*/
 }
 
 
