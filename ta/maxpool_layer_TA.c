@@ -28,6 +28,9 @@ image_TA get_maxpool_delta_TA(maxpool_layer_TA l)
 maxpool_layer_TA make_maxpool_layer_TA(int batch, int h, int w, int c, int size, int stride, int padding)
 {
     maxpool_layer_TA l = {0};
+    ////////
+    l.layer_size = 0;
+
     l.type = MAXPOOL_TA;
     l.batch = batch;
     l.h = h;
@@ -43,12 +46,18 @@ maxpool_layer_TA make_maxpool_layer_TA(int batch, int h, int w, int c, int size,
     l.stride = stride;
     int output_size = l.out_h * l.out_w * l.out_c * batch;
     l.indexes = calloc(output_size, sizeof(int));
+    l.layer_size += output_size * sizeof(int);
+
     l.output =  calloc(output_size, sizeof(float));
+    l.layer_size += output_size * sizeof(float);
+
     l.delta =   calloc(output_size, sizeof(float));
+    l.layer_size += output_size * sizeof(float);
     l.forward_TA = forward_maxpool_layer_TA_new;
     l.backward_TA = backward_maxpool_layer_TA_new;
 
     //IMSG("max_TA       %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c);
+    printf("[maxpool layer TA] %d bytes allocated\n", l.layer_size);
     return l;
 }
 

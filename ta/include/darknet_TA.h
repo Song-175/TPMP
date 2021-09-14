@@ -88,6 +88,10 @@ struct layer_TA{
     void (*backward_TA)  (struct layer_TA, struct network_TA);
     void (*update_TA)    (struct layer_TA, update_args_TA);
 
+    /////////////
+    int layer_size;
+
+
     int netnum;
 
     int batch_normalize;

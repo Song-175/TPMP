@@ -18,15 +18,25 @@ softmax_layer_TA make_softmax_layer_TA_new(int batch, int inputs, int groups, fl
     //IMSG("softmax_TA                                     %4d\n",  inputs);
     softmax_layer_TA l = {0};
     l.type = SOFTMAX_TA;
+    //////////
+    l.layer_size = 0;
+
     l.batch = batch;
     l.groups = groups;
 
     l.inputs = inputs;
     l.outputs = inputs;
     l.loss = calloc(inputs*batch, sizeof(float));
+    l.layer_size += inputs*batch*sizeof(float);
+
     l.output = calloc(inputs*batch, sizeof(float));
+    l.layer_size += inputs*batch*sizeof(float);
+
     l.delta = calloc(inputs*batch, sizeof(float));
+    l.layer_size += inputs*batch*sizeof(float);
+
     l.cost = calloc(1, sizeof(float));
+    l.layer_size += 1 * sizeof(float);
 
     l.temperature = temperature;
     l.w = w;
@@ -37,6 +47,8 @@ softmax_layer_TA make_softmax_layer_TA_new(int batch, int inputs, int groups, fl
 
     l.forward_TA = forward_softmax_layer_TA;
     l.backward_TA = backward_softmax_layer_TA;
+
+    printf("[softmax layer TA] %d bytes allocated\n", l.layer_size);
 
     return l;
 }

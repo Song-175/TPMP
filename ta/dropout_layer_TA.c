@@ -12,17 +12,25 @@ dropout_layer_TA make_dropout_layer_TA_new(int batch, int inputs, float probabil
 {
     dropout_layer_TA l = {0};
     l.type = DROPOUT_TA;
+    /////////
+    l.layer_size = 0;
     l.probability = probability;
     l.inputs = inputs;
     l.outputs = inputs;
     l.batch = batch;
+
     l.rand = calloc(inputs*batch, sizeof(float));
+    l.layer_size += inputs*batch*sizeof(float);
+
     l.scale = 1./(1.-probability);
 
     l.netnum = netnum;
 
     l.output = malloc(sizeof(float) * inputs*batch);
+    l.layer_size += sizeof(float) * inputs * batch;
+
     l.delta = malloc(sizeof(float) * inputs*batch);
+    l.layer_size += sizeof(float) * inputs * batch;
 
     l.forward_TA = forward_dropout_layer_TA_new;
     l.backward_TA = backward_dropout_layer_TA_new;
@@ -33,6 +41,7 @@ dropout_layer_TA make_dropout_layer_TA_new(int batch, int inputs, float probabil
     char prob[20];
     ftoa(probability,prob,3);
     //IMSG("dropout_TA    p = %s               %4d  ->  %4d\n", prob, inputs, inputs);
+    printf("[dropout layer TA] %d bytes allocated\n", l.layer_size);
     return l;
 }
 
