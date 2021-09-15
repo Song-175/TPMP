@@ -109,11 +109,18 @@ void forward_network_TA()
         }
     }
 
+    //////////////////
+    if(l.output != netta.input) {
+        printf("Can be free [%d]\n\n", layernum);
+        //free(netta.layers[layernum].output);
+    }
+
     layernum++;
 
     if(layernum == netta.n){    
         calc_network_cost_TA();
     }
+
 
     /////////////////////////////////////////////////////
 /*
