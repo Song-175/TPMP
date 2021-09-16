@@ -44,28 +44,28 @@ char *get_cost_string_TA(COST_TYPE_TA a)
 }
 
 
-cost_layer_TA make_cost_layer_TA_new(int batch, int inputs, COST_TYPE_TA cost_type, float scale, float ratio, float noobject_scale, float thresh)
+cost_layer_TA *make_cost_layer_TA_new(int batch, int inputs, COST_TYPE_TA cost_type, float scale, float ratio, float noobject_scale, float thresh)
 {
     //IMSG("cost_TA                                        %4d\n",  inputs);
-    cost_layer_TA l = {0};
-    l.type = COST_TA;
+    cost_layer_TA *l = malloc(sizeof(cost_layer_TA));
+    l->type = COST_TA;
 
-    l.scale = scale;
-    l.batch = batch;
-    l.inputs = inputs;
-    l.outputs = inputs;
-    l.cost_type = cost_type;
-    l.delta = calloc(inputs*batch, sizeof(float));
-    l.output = calloc(inputs*batch, sizeof(float));
-    l.cost = calloc(1, sizeof(float));
+    l->scale = scale;
+    l->batch = batch;
+    l->inputs = inputs;
+    l->outputs = inputs;
+    l->cost_type = cost_type;
+    l->delta = calloc(inputs*batch, sizeof(float));
+    l->output = calloc(inputs*batch, sizeof(float));
+    l->cost = calloc(1, sizeof(float));
 
-    l.scale = scale;
-    l.ratio = ratio;
-    l.noobject_scale = noobject_scale;
-    l.thresh = thresh;
+    l->scale = scale;
+    l->ratio = ratio;
+    l->noobject_scale = noobject_scale;
+    l->thresh = thresh;
 
-    l.forward_TA = forward_cost_layer_TA;
-    l.backward_TA = backward_cost_layer_TA;
+    l->forward_TA = forward_cost_layer_TA;
+    l->backward_TA = backward_cost_layer_TA;
 
     return l;
 }

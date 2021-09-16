@@ -304,7 +304,7 @@ struct layer_TA{
     size_t workspace_size;
 };
 
-void free_layer_TA(layer_TA);
+//void free_layer_TA(layer_TA);
 
 typedef enum {
     CONSTANT_TA, STEP_TA, EXP_TA, POLY_TA, STEPS_TA, SIG_TA, RANDOM_TA
@@ -317,7 +317,7 @@ typedef struct network_TA{
     int *t;
     float epoch;
     int subdivisions;
-    layer_TA *layers;
+    layer_TA **layers;
     float *output;
     learning_rate_policy_TA policy;
 

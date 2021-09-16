@@ -215,15 +215,16 @@ static TEE_Result make_convolutional_layer_TA_params(uint32_t param_types,
 
     ACTIVATION_TA activation = get_activation_TA(acti);
 
-    layer_TA lta = make_convolutional_layer_TA_new(batch, h, w, c, n, groups, size, stride, padding, activation, batch_normalize, binary, xnor, adam, flipped, dot);
+    layer_TA *lta = make_convolutional_layer_TA_new(batch, h, w, c, n, groups, size, stride, padding, activation, batch_normalize, binary, xnor, adam, flipped, dot);
     netta.layers[netnum] = lta;
-    if (lta.workspace_size > netta.workspace_size) netta.workspace_size = lta.workspace_size;
+
+    if (lta->workspace_size > netta.workspace_size) netta.workspace_size = lta->workspace_size;
     netnum++;
 
     return TEE_SUCCESS;
 }
 
-static TEE_Result make_maxpool_layer_TA_params(uint32_t param_types,
+static TEE_Result *make_maxpool_layer_TA_params(uint32_t param_types,
                                        TEE_Param params[4])
 {
     uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT,
@@ -245,7 +246,7 @@ static TEE_Result make_maxpool_layer_TA_params(uint32_t param_types,
     int stride = params0[5];
     int padding = params0[6];
 
-    layer_TA lta = make_maxpool_layer_TA(batch, h, w, c, size, stride, padding);
+    layer_TA *lta = make_maxpool_layer_TA(batch, h, w, c, size, stride, padding);
     netta.layers[netnum] = lta;
     netnum++;
 
@@ -253,7 +254,7 @@ static TEE_Result make_maxpool_layer_TA_params(uint32_t param_types,
 }
 
 
-static TEE_Result make_avgpool_layer_TA_params(uint32_t param_types,
+static TEE_Result *make_avgpool_layer_TA_params(uint32_t param_types,
                                        TEE_Param params[4])
 {
     uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT,
@@ -272,7 +273,7 @@ static TEE_Result make_avgpool_layer_TA_params(uint32_t param_types,
     int w = params0[2];
     int c = params0[3];
 
-    layer_TA lta = make_avgpool_layer_TA(batch, h, w, c);
+    layer_TA *lta = make_avgpool_layer_TA(batch, h, w, c);
     netta.layers[netnum] = lta;
     netnum++;
 
@@ -309,16 +310,16 @@ static TEE_Result make_dropout_layer_TA_params(uint32_t param_types,
     float *net_prev_output = params2;
     float *net_prev_delta = params3;
 
-    layer_TA lta = make_dropout_layer_TA_new(batch, inputs, probability, w, h, c, netnum);
+    layer_TA *lta = make_dropout_layer_TA_new(batch, inputs, probability, w, h, c, netnum);
 
     if(netnum == 0){
       for(int z=0; z<buffersize; z++){
-        lta.output[z] = net_prev_output[z];
-        lta.delta[z] = net_prev_delta[z];
+        lta->output[z] = net_prev_output[z];
+        lta->delta[z] = net_prev_delta[z];
       }
     }else{
-        lta.output = netta.layers[netnum-1].output;
-        lta.delta = netta.layers[netnum-1].delta;
+        lta->output = netta.layers[netnum-1]->output;
+        lta->delta = netta.layers[netnum-1]->delta;
     }
 
     netta.layers[netnum] = lta;
@@ -353,7 +354,7 @@ static TEE_Result make_connected_layer_TA_params(uint32_t param_types,
     acti = params[1].memref.buffer;
     ACTIVATION_TA activation = get_activation_TA(acti);
 
-    layer_TA lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
+    layer_TA *lta = make_connected_layer_TA_new(batch, inputs, outputs, activation, batch_normalize, adam);
     netta.layers[netnum] = lta;
     netnum++;
 
@@ -384,7 +385,7 @@ static TEE_Result make_softmax_layer_TA_params(uint32_t param_types,
     int noloss = params0[7];
     float temperature = params[1].value.a;
 
-    layer_TA lta = make_softmax_layer_TA_new(batch, inputs, groups, temperature, w, h, c, spatial, noloss);
+    layer_TA *lta = make_softmax_layer_TA_new(batch, inputs, groups, temperature, w, h, c, spatial, noloss);
     netta.layers[netnum] = lta;
     netnum++;
 
@@ -419,7 +420,7 @@ static TEE_Result make_cost_layer_TA_params(uint32_t param_types,
     ACTIVATION_TA cost_type = get_cost_type_TA(cost_t);
 
 
-    layer_TA lta = make_cost_layer_TA_new(batch, inputs, cost_type, scale, ratio, noobject_scale, thresh);
+    layer_TA *lta = make_cost_layer_TA_new(batch, inputs, cost_type, scale, ratio, noobject_scale, thresh);
     netta.layers[netnum] = lta;
     netnum++;
 
@@ -563,13 +564,13 @@ static TEE_Result forward_network_back_TA_params(uint32_t param_types,
     printf("forward_network_TA_params: layernum:%d\n", layernum-1);
     for(int z=0; z<buffersize; z++){
 //        params0[z] = netta.layers[netta.n-1].output[z];
-        params0[z] = netta.layers[layernum-1].output[z];
+        params0[z] = netta.layers[layernum-1]->output[z];
     }
 
     // ?????
     //free(ta_net_input);
     if(debug_summary_com == 1){
-        summary_array("forward_network_back / l_pp2.output", netta.layers[netta.n-1].output, buffersize);
+        summary_array("forward_network_back / l_pp2.output", netta.layers[netta.n-1]->output, buffersize);
     }
     return TEE_SUCCESS;
 }
@@ -694,13 +695,13 @@ static TEE_Result backward_network_back_TA_params(uint32_t param_types,
     int buffersize = params[0].memref.size / sizeof(float);
 
     for(int z=0; z<buffersize; z++){
-        netta.layers[netta.n - 1].output[z] = params0[z];
-        netta.layers[netta.n - 1].delta[z] = params1[z];
+        netta.layers[netta.n - 1]->output[z] = params0[z];
+        netta.layers[netta.n - 1]->delta[z] = params1[z];
     }
 
     if(debug_summary_com == 1){
-        summary_array("backward_network_back / l_pp2.output", netta.layers[netta.n - 1].output, buffersize);
-        summary_array("backward_network_back / l_pp2.delta", netta.layers[netta.n - 1].delta, buffersize);
+        summary_array("backward_network_back / l_pp2.output", netta.layers[netta.n - 1]->output, buffersize);
+        summary_array("backward_network_back / l_pp2.delta", netta.layers[netta.n - 1]->delta, buffersize);
     }
 
     return TEE_SUCCESS;
@@ -723,12 +724,12 @@ static TEE_Result backward_network_back_TA_addidion_params(uint32_t param_types,
     int buffersize = params[0].memref.size / sizeof(float);
 
     for(int z=0; z<buffersize; z++){
-        params0[z] = netta.layers[netta.n - 1].output[z];
+        params0[z] = netta.layers[netta.n - 1]->output[z];
         //params1[z] = netta.layers[netta.n - 1].delta[z]; zeros, removing
     }
 
     if(debug_summary_com == 1){
-        summary_array("backward_network_back_addidion / l_pp2.output", netta.layers[netta.n - 1].output, buffersize);
+        summary_array("backward_network_back_addidion / l_pp2.output", netta.layers[netta.n - 1]->output, buffersize);
         //summary_array("backward_network_back_addidion / l_pp2.delta", netta.layers[netta.n - 1].delta, buffersize);
     }
     return TEE_SUCCESS;
