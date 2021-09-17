@@ -5,24 +5,24 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
-avgpool_layer_TA make_avgpool_layer_TA(int batch, int w, int h, int c)
+avgpool_layer_TA *make_avgpool_layer_TA(int batch, int w, int h, int c)
 {
-    avgpool_layer_TA l = {0};
-    l.type = AVGPOOL_TA;
-    l.batch = batch;
-    l.h = h;
-    l.w = w;
-    l.c = c;
-    l.out_w = 1;
-    l.out_h = 1;
-    l.out_c = c;
-    l.outputs = l.out_c;
-    l.inputs = h*w*c;
-    int output_size = l.outputs * batch;
-    l.output =  calloc(output_size, sizeof(float));
-    l.delta =   calloc(output_size, sizeof(float));
-    l.forward_TA = forward_avgpool_layer_TA_new;
-    l.backward_TA = backward_avgpool_layer_TA_new;
+    avgpool_layer_TA *l = malloc(sizeof(avgpool_layer_TA));
+    l->type = AVGPOOL_TA;
+    l->batch = batch;
+    l->h = h;
+    l->w = w;
+    l->c = c;
+    l->out_w = 1;
+    l->out_h = 1;
+    l->out_c = c;
+    l->outputs = l->out_c;
+    l->inputs = h*w*c;
+    int output_size = l->outputs * batch;
+    l->output =  calloc(output_size, sizeof(float));
+    l->delta =   calloc(output_size, sizeof(float));
+    l->forward_TA = forward_avgpool_layer_TA_new;
+    l->backward_TA = backward_avgpool_layer_TA_new;
 
     return l;
 }

@@ -92,78 +92,118 @@ void update_connected_layer_TA_new(layer_TA l, update_args_TA a)
     scal_cpu_TA(l.inputs*l.outputs, momentum, l.weight_updates, 1);
 }
 
-layer_TA make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVATION_TA activation, int batch_normalize, int adam)
+layer_TA *make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVATION_TA activation, int batch_normalize, int adam)
 {
     int i;
-    layer_TA l = {0};
-    l.learning_rate_scale = 1;
-    l.type = CONNECTED_TA;
+    layer_TA *l = calloc(1, sizeof(layer_TA));
+    l->learning_rate_scale = 1;
+    l->type = CONNECTED_TA;
+    l->layer_size = 0;
 
-    l.inputs = inputs;
-    l.outputs = outputs;
-    l.batch = batch;
-    l.batch_normalize = batch_normalize;
-    l.h = 1;
-    l.w = 1;
-    l.c = inputs;
-    l.out_h = 1;
-    l.out_w = 1;
-    l.out_c = outputs;
+    l->inputs = inputs;
+    l->outputs = outputs;
+    l->batch = batch;
+    l->batch_normalize = batch_normalize;
+    l->h = 1;
+    l->w = 1;
+    l->c = inputs;
+    l->out_h = 1;
+    l->out_w = 1;
+    l->out_c = outputs;
 
-    l.output = calloc(batch*outputs, sizeof(float));
-    l.delta = calloc(batch*outputs, sizeof(float));
+    l->output = calloc(batch*outputs, sizeof(float));
+    l->layer_size += batch*outputs*sizeof(float);
 
-    l.weight_updates = calloc(inputs*outputs, sizeof(float));
-    l.bias_updates = calloc(outputs, sizeof(float));
+    l->delta = calloc(batch*outputs, sizeof(float));
+    l->layer_size += batch*outputs*sizeof(float);
 
-    l.weights = calloc(outputs*inputs, sizeof(float));
-    l.biases = calloc(outputs, sizeof(float));
+    l->weight_updates = calloc(inputs*outputs, sizeof(float));
+    l->layer_size += inputs*outputs*sizeof(float);
 
-    l.forward_TA = forward_connected_layer_TA_new;
-    l.backward_TA = backward_connected_layer_TA_new;
-    l.update_TA = update_connected_layer_TA_new;
+    l->bias_updates = calloc(outputs, sizeof(float));
+    l->layer_size += outputs*sizeof(float);
 
-    //float scale = 1./sqrt(inputs);
+    l->weights = calloc(outputs*inputs, sizeof(float));
+    l->layer_size += inputs*outputs*sizeof(float);
+
+    l->biases = calloc(outputs, sizeof(float));
+    l->layer_size += outputs*sizeof(float);
+
+    l->forward_TA = forward_connected_layer_TA_new;
+    l->backward_TA = backward_connected_layer_TA_new;
+    l->update_TA = update_connected_layer_TA_new;
+
+    //float scale = 1->/sqrt(inputs);
     float scale = ta_sqrt(2./inputs);
     for(i = 0; i < outputs*inputs; ++i){
-        //l.weight_updates[i] = 1.0f;
-        l.weights[i] = scale * rand_uniform_TA(-1, 1);
+        //l->weight_updates[i] = 1->0f;
+        l->weights[i] = scale * rand_uniform_TA(-1, 1);
     }
 
     for(i = 0; i < outputs; ++i){
-        l.biases[i] = 0;
+        l->biases[i] = 0;
     }
 
     if(adam){
-        l.m = calloc(l.inputs*l.outputs, sizeof(float));
-        l.v = calloc(l.inputs*l.outputs, sizeof(float));
-        l.bias_m = calloc(l.outputs, sizeof(float));
-        l.scale_m = calloc(l.outputs, sizeof(float));
-        l.bias_v = calloc(l.outputs, sizeof(float));
-        l.scale_v = calloc(l.outputs, sizeof(float));
+        l->m = calloc(l->inputs*l->outputs, sizeof(float));
+        l->layer_size += l->inputs * l->outputs * sizeof(float);
+
+        l->v = calloc(l->inputs*l->outputs, sizeof(float));
+        l->layer_size += l->inputs * l->outputs * sizeof(float);
+
+        l->bias_m = calloc(l->outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
+
+        l->scale_m = calloc(l->outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
+
+        l->bias_v = calloc(l->outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
+
+        l->scale_v = calloc(l->outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
     }
 
     if(batch_normalize){
-        l.scales = calloc(outputs, sizeof(float));
-        l.scale_updates = calloc(outputs, sizeof(float));
+        l->scales = calloc(outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
+
+        l->scale_updates = calloc(outputs, sizeof(float));
+        l->layer_size += l->outputs * sizeof(float);
+
         for(i = 0; i < outputs; ++i){
-            l.scales[i] = 1;
+            l->scales[i] = 1;
         }
 
-        l.mean = calloc(outputs, sizeof(float));
-        l.mean_delta = calloc(outputs, sizeof(float));
-        l.variance = calloc(outputs, sizeof(float));
-        l.variance_delta = calloc(outputs, sizeof(float));
+        l->mean = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
 
-        l.rolling_mean = calloc(outputs, sizeof(float));
-        l.rolling_variance = calloc(outputs, sizeof(float));
+        l->mean_delta = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
 
-        l.x = calloc(batch*outputs, sizeof(float));
-        l.x_norm = calloc(batch*outputs, sizeof(float));
+        l->variance = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
+
+        l->variance_delta = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
+
+        l->rolling_mean = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
+
+        l->rolling_variance = calloc(outputs, sizeof(float));
+        l->layer_size += outputs * sizeof(float);
+
+        l->x = calloc(batch*outputs, sizeof(float));
+        l->layer_size += batch * outputs * sizeof(float);
+
+        l->x_norm = calloc(batch*outputs, sizeof(float));
+        l->layer_size += batch * outputs * sizeof(float);
     }
 
-    l.activation = activation;
+    l->activation = activation;
     //IMSG("connected_TA                         %4d  ->  %4d\n", inputs, outputs);
+
+    printf("[connected layer TA] %d bytes allocated\n", l->layer_size);
 
     return l;
 }

@@ -11,7 +11,7 @@ void scale_bias_TA(float *output, float *scales, int batch, int n, int size);
 
 void backward_bias_TA(float *bias_updates, float *delta, int batch, int n, int size);
 
-convolutional_layer_TA make_convolutional_layer_TA_new(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION_TA activation, int batch_normalize, int binary, int xnor, int adam, int flipped, float dot);
+convolutional_layer_TA *make_convolutional_layer_TA_new(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION_TA activation, int batch_normalize, int binary, int xnor, int adam, int flipped, float dot);
 
 void forward_convolutional_layer_TA_new(convolutional_layer_TA l, network_TA net);
 

@@ -17,4 +17,8 @@ void forward_network_TA();
 void backward_network_TA(float *ca_net_input);
 
 void update_network_TA(update_args_TA a);
+
+void free_layer_TA(layer_TA *l);
+
+void free_layer_member_TA(layer_TA *l);
 #endif

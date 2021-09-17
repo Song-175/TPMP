@@ -12,31 +12,45 @@
 #include <tee_internal_api_extensions.h>
 
 
-softmax_layer_TA make_softmax_layer_TA_new(int batch, int inputs, int groups, float temperature, int w, int h, int c, int spatial, int noloss)
+softmax_layer_TA *make_softmax_layer_TA_new(int batch, int inputs, int groups, float temperature, int w, int h, int c, int spatial, int noloss)
 {
     assert(inputs%groups == 0);
     //IMSG("softmax_TA                                     %4d\n",  inputs);
-    softmax_layer_TA l = {0};
-    l.type = SOFTMAX_TA;
-    l.batch = batch;
-    l.groups = groups;
+    softmax_layer_TA *l = calloc(1, sizeof(softmax_layer_TA));
+    l->type = SOFTMAX_TA;
+    //////////
+    l->layer_size = 0;
 
-    l.inputs = inputs;
-    l.outputs = inputs;
-    l.loss = calloc(inputs*batch, sizeof(float));
-    l.output = calloc(inputs*batch, sizeof(float));
-    l.delta = calloc(inputs*batch, sizeof(float));
-    l.cost = calloc(1, sizeof(float));
+    l->batch = batch;
+    l->groups = groups;
 
-    l.temperature = temperature;
-    l.w = w;
-    l.h = h;
-    l.c = c;
-    l.spatial = spatial;
-    l.noloss = noloss;
+    l->inputs = inputs;
+    l->outputs = inputs;
+    l->loss = calloc(inputs*batch, sizeof(float));
+    l->layer_size += inputs*batch*sizeof(float);
 
-    l.forward_TA = forward_softmax_layer_TA;
-    l.backward_TA = backward_softmax_layer_TA;
+    l->output = calloc(inputs*batch, sizeof(float));
+    l->layer_size += inputs*batch*sizeof(float);
+
+    l->delta = calloc(inputs*batch, sizeof(float));
+    l->layer_size += inputs*batch*sizeof(float);
+
+    l->cost = calloc(1, sizeof(float));
+    l->layer_size += 1 * sizeof(float);
+
+    l->temperature = temperature;
+    l->w = w;
+    l->h = h;
+    l->c = c;
+    l->spatial = spatial;
+    l->noloss = noloss;
+
+    l->forward_TA = forward_softmax_layer_TA;
+    l->backward_TA = backward_softmax_layer_TA;
+
+    l->layer_size += sizeof(softmax_layer_TA);
+
+    printf("[softmax layer TA] %d bytes allocated\n", l->layer_size);
 
     return l;
 }
