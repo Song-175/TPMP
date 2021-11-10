@@ -193,6 +193,8 @@ network *make_network(int n)
     net->seen = calloc(1, sizeof(uint64_t));
     net->t    = calloc(1, sizeof(int));
     net->cost = calloc(1, sizeof(float));
+    //////////////////////
+    net->max_size = 0;
     return net;
 }
 
@@ -521,6 +523,9 @@ float train_network_sgd(network *net, data d, int n)
 
 float train_network(network *net, data d)
 {
+    /////
+    printf("Training\n");
+
     assert(d.X.rows % net->batch == 0);
     int batch = net->batch;
     int n = d.X.rows / batch;
@@ -529,18 +534,26 @@ float train_network(network *net, data d)
     float sum = 0;
     for(i = 0; i < n; ++i){
         get_next_batch(d, batch, i*batch, net->input, net->truth);
+        ////
+        printf("get next batch\n");
 
         // transmit net truth into TA
         if(partition_point1 < net->n-1 && partition_point2 >= net->n-1){
             net_truth_CA(net->truth, net->truths, net->batch);
+            ////
+            printf("net_truth_CA\n");
         }
 
 
         float err = train_network_datum(net);
+        /////
+        printf("train_network_datum\n");
         sum += err;
     }
 
     calc_network_loss_CA(n, batch);
+    /////
+    printf("calc_network_loss_CA\n");
     return (float)sum/(n*batch);
 }
 

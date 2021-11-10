@@ -60,6 +60,7 @@ softmax_layer_TA *make_softmax_layer_TA_new(int batch, int inputs, int groups, f
 void forward_softmax_layer_TA(const softmax_layer_TA l, network_TA net)
 {
     if(l.softmax_tree){
+        printf("In tree\n");
         int i;
         int count = 0;
         for (i = 0; i < l.softmax_tree->groups; ++i) {
@@ -68,11 +69,15 @@ void forward_softmax_layer_TA(const softmax_layer_TA l, network_TA net)
             count += group_size;
         }
     } else {
+        printf("else tree\n");
         softmax_cpu_TA(net.input, l.inputs/l.groups, l.batch, l.inputs, l.groups, l.inputs/l.groups, 1, l.temperature, l.output);
     }
 
     if(net.truth && !l.noloss){
+        printf("net.truth && !l.noloss\n");
+        printf("%d %d %ld %ld %ld %ld\n", l.batch, l.inputs, l.output[0], net.truth[0], l.delta[0], l.loss[0]);
         softmax_x_ent_cpu_TA(l.batch*l.inputs, l.output, net.truth, l.delta, l.loss);
+        printf("after ent_cpu_TA\n");
         l.cost[0] = sum_array_TA(l.loss, l.batch*l.inputs);
     }
 }

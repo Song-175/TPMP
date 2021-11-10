@@ -116,7 +116,8 @@ void softmax_x_ent_cpu_TA(int n, float *pred, float *truth, float *delta, float 
     for(i = 0; i < n; ++i){
         float t = truth[i];
         float p = pred[i];
-        error[i] = (t) ? -ta_ln(p) : 0;
+        printf("[%d] (%ld, %ld) (%ld, %ld) %ld %ld\n", i, truth[i], t, pred[i], p, error[i], delta[i]);
+        error[i] = (t) ? -ta_ln(p) : 0; // here haha
         delta[i] = t-p;
     }
 }

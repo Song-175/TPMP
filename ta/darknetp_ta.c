@@ -159,6 +159,9 @@ static TEE_Result make_netowork_TA_params(uint32_t param_types,
 
     make_network_TA(n, learning_rate, momentum, decay, time_steps, notruth, batch, subdivisions, random, adam, B1, B2, eps, h, w, c, inputs, max_crop, min_crop, max_ratio, min_ratio, center, clip, angle, aspect, saturation, exposure, hue, burn_in, power, max_batches);
 
+    ///////////////////////
+    netta_truth = malloc(inputs * batch * sizeof(float));
+
     return TEE_SUCCESS;
 }
 
@@ -425,7 +428,7 @@ static TEE_Result make_cost_layer_TA_params(uint32_t param_types,
     netnum++;
 
     // allocate net.truth when the cost layer inside TEE
-    netta_truth = malloc(inputs * batch * sizeof(float));
+    //netta_truth = malloc(inputs * batch * sizeof(float));
     //free(netta_truth) needed
 
     return TEE_SUCCESS;

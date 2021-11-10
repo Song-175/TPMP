@@ -2,6 +2,8 @@
 #include "cuda.h"
 #include "parser.h"
 
+#include "analyzer.h"//Analyzer
+
 #include <stdio.h>
 
 image get_maxpool_image(maxpool_layer l)
@@ -23,6 +25,9 @@ image get_maxpool_delta(maxpool_layer l)
 maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int stride, int padding)
 {
     maxpool_layer l = {0};
+    ///////////////////
+    l.layer_size = sizeof(l);
+    ///////////////////
     l.type = MAXPOOL;
     l.batch = batch;
     l.h = h;
@@ -37,9 +42,12 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.size = size;
     l.stride = stride;
     int output_size = l.out_h * l.out_w * l.out_c * batch;
-    l.indexes = calloc(output_size, sizeof(int));
-    l.output =  calloc(output_size, sizeof(float));
-    l.delta =   calloc(output_size, sizeof(float));
+    //l.indexes = calloc(output_size, sizeof(int));
+    //l.output =  calloc(output_size, sizeof(f//loat));
+    //l.de//lta =   calloc(output_size, sizeof(f//loat));
+    l.indexes = an_calloc(&(l.layer_size), output_size, sizeof(int));
+    l.output =  an_calloc(&(l.layer_size), output_size, sizeof(float));
+    l.delta =   an_calloc(&(l.layer_size), output_size, sizeof(float));
     l.forward = forward_maxpool_layer;
     l.backward = backward_maxpool_layer;
     #ifdef GPU

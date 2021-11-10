@@ -4,18 +4,24 @@
 
 #include "parser.h"
 
+#include "analyzer.h"//Analyzer
+
 #include <stdlib.h>
 #include <stdio.h>
 
 dropout_layer make_dropout_layer(int batch, int inputs, float probability)
 {
     dropout_layer l = {0};
+    ////////////////////
+    l.layer_size = sizeof(l);
+    ////////////////////
     l.type = DROPOUT;
     l.probability = probability;
     l.inputs = inputs;
     l.outputs = inputs;
     l.batch = batch;
-    l.rand = calloc(inputs*batch, sizeof(float));
+    //l.rand = calloc(inputs*batch, sizeof(float));
+    l.rand = an_calloc(&(l.layer_size), inputs*batch, sizeof(float));
     l.scale = 1./(1.-probability);
     l.forward = forward_dropout_layer;
     l.backward = backward_dropout_layer;

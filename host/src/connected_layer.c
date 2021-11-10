@@ -7,6 +7,8 @@
 #include "gemm.h"
 #include "parser.h"
 
+#include "analyzer.h"//Analyzer
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +21,10 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.learning_rate_scale = 1;
     l.type = CONNECTED;
 
+    ////////////////////
+    l.layer_size = sizeof(l);
+    ////////////////////
+
     l.inputs = inputs;
     l.outputs = outputs;
     l.batch = batch;
@@ -29,7 +35,7 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.out_h = 1;
     l.out_w = 1;
     l.out_c = outputs;
-
+    /*
     l.output = calloc(batch*outputs, sizeof(float));
     l.delta = calloc(batch*outputs, sizeof(float));
 
@@ -38,6 +44,15 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
 
     l.weights = calloc(outputs*inputs, sizeof(float));
     l.biases = calloc(outputs, sizeof(float));
+    */
+    l.output = an_calloc(&(l.layer_size), batch*outputs, sizeof(float));
+    l.delta = an_calloc(&(l.layer_size), batch*outputs, sizeof(float));
+
+    l.weight_updates = an_calloc(&(l.layer_size), inputs*outputs, sizeof(float));
+    l.bias_updates = an_calloc(&(l.layer_size), outputs, sizeof(float));
+
+    l.weights = an_calloc(&(l.layer_size), outputs*inputs, sizeof(float));
+    l.biases = an_calloc(&(l.layer_size), outputs, sizeof(float));
 
     l.forward = forward_connected_layer;
     l.backward = backward_connected_layer;
@@ -54,20 +69,30 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     }
 
     if(adam){
+        /*
         l.m = calloc(l.inputs*l.outputs, sizeof(float));
         l.v = calloc(l.inputs*l.outputs, sizeof(float));
         l.bias_m = calloc(l.outputs, sizeof(float));
         l.scale_m = calloc(l.outputs, sizeof(float));
         l.bias_v = calloc(l.outputs, sizeof(float));
         l.scale_v = calloc(l.outputs, sizeof(float));
+        */
+        l.m = an_calloc(&(l.layer_size), l.inputs*l.outputs, sizeof(float));
+        l.v = an_calloc(&(l.layer_size), l.inputs*l.outputs, sizeof(float));
+        l.bias_m = an_calloc(&(l.layer_size), l.outputs, sizeof(float));
+        l.scale_m = an_calloc(&(l.layer_size), l.outputs, sizeof(float));
+        l.bias_v = an_calloc(&(l.layer_size), l.outputs, sizeof(float));
+        l.scale_v = an_calloc(&(l.layer_size), l.outputs, sizeof(float));
     }
     if(batch_normalize){
-        l.scales = calloc(outputs, sizeof(float));
-        l.scale_updates = calloc(outputs, sizeof(float));
+        //l.scales = calloc(outputs, sizeof(float));
+        //l.scale_updates = calloc(outputs, sizeof(float));
+        l.scales = an_calloc(&(l.layer_size), outputs, sizeof(float));
+        l.scale_updates = an_calloc(&(l.layer_size), outputs, sizeof(float));
         for(i = 0; i < outputs; ++i){
             l.scales[i] = 1;
         }
-
+        /*
         l.mean = calloc(outputs, sizeof(float));
         l.mean_delta = calloc(outputs, sizeof(float));
         l.variance = calloc(outputs, sizeof(float));
@@ -78,6 +103,18 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
 
         l.x = calloc(batch*outputs, sizeof(float));
         l.x_norm = calloc(batch*outputs, sizeof(float));
+        */
+
+        l.mean = an_calloc(&(l.layer_size), outputs, sizeof(float));
+        l.mean_delta = an_calloc(&(l.layer_size), outputs, sizeof(float));
+        l.variance = an_calloc(&(l.layer_size), outputs, sizeof(float));
+        l.variance_delta = an_calloc(&(l.layer_size), outputs, sizeof(float));
+
+        l.rolling_mean = an_calloc(&(l.layer_size), outputs, sizeof(float));
+        l.rolling_variance = an_calloc(&(l.layer_size), outputs, sizeof(float));
+
+        l.x = an_calloc(&(l.layer_size), batch*outputs, sizeof(float));
+        l.x_norm = an_calloc(&(l.layer_size), batch*outputs, sizeof(float));
     }
 
 #ifdef GPU

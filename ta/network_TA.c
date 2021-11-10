@@ -28,7 +28,7 @@ void make_network_TA(int n, float learning_rate, float momentum, float decay, in
     //netta.seen = calloc(1, sizeof(size_t));
     netta.seen = calloc(1, sizeof(uint64_t));
     //netta.layers = calloc(netta.n, sizeof(layer_TA));
-    netta.layers = malloc(n * sizeof(layer_TA *));
+    netta.layers = calloc(netta.n, sizeof(layer_TA *));
     netta.t    = calloc(1, sizeof(int));
     netta.cost = calloc(1, sizeof(float));
 
@@ -84,23 +84,26 @@ void forward_network_TA()
   
     //////
     if(layernum > 0)
-        free_layer_TA(netta.layers[netta.index]);
+        //free_layer_TA(netta.layers[netta.index]);
 
     netta.index = layernum;
 
+    printf("LayerNum : %d\n", layernum);
     layer_TA l = *(netta.layers[layernum]);
 
     if(l.delta){
         fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
     }
 
+    printf("Before forward\n");
     l.forward_TA(l, netta);
+    printf("After forward\n");
 
     if(debug_summary_pass == 1){
         summary_array("forward_network / l.output", l.output, l.outputs*netta.batch);
     }
 
-//        netta.input = l.output;
+    netta.input = l.output;
 
     if(l.truth) {
         netta.truth = l.output;
@@ -112,12 +115,6 @@ void forward_network_TA()
         for(int z=0; z<l.outputs*1; z++){
             ta_net_output[z] = l.output[z];
         }
-    }
-
-    //////////////////
-    if(l.output != netta.input) {
-        printf("Can be free [%d]\n\n", layernum);
-        //free(netta.layers[layernum].output);
     }
 
     layernum++;

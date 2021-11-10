@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
@@ -132,6 +134,7 @@ double asr(double a, double b, double eps, double A,int flag)
 {
     double c = a + (b-a)/2;
     double L = simpson(a, c,flag), R = simpson(c, b,flag);
+
     if(fabs(L+R-A) <= 15*eps) return L+R+(L+R-A)/15.0;
     return asr(a, c, eps/2, L,flag) + asr(c, b, eps/2, R,flag);
 }
@@ -143,6 +146,7 @@ double asr0(double a, double b, double eps,int flag)
 
 double ta_ln(double x)
 {
+    printf("ta_ln : %ld\n", x);
     return asr0(1,x,1e-8,1);
 }
 

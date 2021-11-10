@@ -127,6 +127,7 @@ struct layer{
     void (*backward_TA)   (struct layer, struct network);
     void (*update_TA)    (struct layer, update_args);
 
+    int layer_size; // for calculate the size of the layer
     int transpose; //dhkwon added in NW network
     int batch_normalize;
     int shortcut;
@@ -492,6 +493,9 @@ typedef struct network{
     int index;
     float *cost;
     float clip;
+
+    //////////////////////
+    int max_size;
 
 #ifdef GPU
     float *input_gpu;

@@ -3,6 +3,8 @@
 #include "cuda.h"
 #include "parser.h"
 
+#include "analyzer.h"//Analyzer
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -19,15 +21,24 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
         fprintf(stderr, "softmax_TA                                     %4d\n",  inputs);
     }
     softmax_layer l = {0};
+    ////////////////////
+    l.layer_size = sizeof(l);
+    ///////////////////
+
     l.type = SOFTMAX;
     l.batch = batch;
     l.groups = groups;
     l.inputs = inputs;
     l.outputs = inputs;
-    l.loss = calloc(inputs*batch, sizeof(float));
-    l.output = calloc(inputs*batch, sizeof(float));
-    l.delta = calloc(inputs*batch, sizeof(float));
-    l.cost = calloc(1, sizeof(float));
+    //l.loss = calloc(inputs*batch, sizeof(float));
+    //l.output = calloc(inputs*batch, sizeof(float));
+    //l.delta = calloc(inputs*batch, sizeof(float));
+    //l.cost = calloc(1, sizeof(float));
+    
+    l.loss = an_calloc(&(l.layer_size), inputs*batch, sizeof(float));
+    l.output = an_calloc(&(l.layer_size), inputs*batch, sizeof(float));
+    l.delta = an_calloc(&(l.layer_size), inputs*batch, sizeof(float));
+    l.cost = an_calloc(&(l.layer_size), 1, sizeof(float));
 
     l.forward = forward_softmax_layer;
     l.backward = backward_softmax_layer;

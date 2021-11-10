@@ -217,8 +217,8 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     layer.dot = option_find_float_quiet(options, "dot", 0);
 
 
-    printf("parse_convolutional: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", 
-            batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam); 
+    printf("parse_convolutional: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d %d\n", 
+            batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam, layer.layer_size); 
 
     if(count_global > partition_point1 && count_global <= partition_point2){
 //    make_convolutional_layer_CA(batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net->adam, layer.flipped, layer.dot);
@@ -286,8 +286,8 @@ layer parse_connected(list *options, size_params params)
 
     layer l = make_connected_layer(params.batch, params.inputs, output, activation, batch_normalize, params.net->adam);
 
-    printf("parse_conneted: %d, %d, %d, %d, %d, %d\n", 
-            params.batch, params.inputs, output, activation, batch_normalize, params.net->adam); 
+    printf("parse_conneted: %d, %d, %d, %d, %d, %d, Size : %d\n", 
+            params.batch, params.inputs, output, activation, batch_normalize, params.net->adam, l.layer_size); 
 
     // send parameters into TA
     if(count_global > partition_point1 && count_global <= partition_point2){
@@ -309,8 +309,8 @@ layer parse_softmax(list *options, size_params params)
     l.spatial = option_find_float_quiet(options, "spatial", 0);
     l.noloss =  option_find_int_quiet(options, "noloss", 0);
 
-    printf("parse_softmax: %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
-            params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss); 
+    printf("parse_softmax: %d, %d, %d, %d, %d, %d, %d, %d, %d, Size : %d\n",
+            params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss, l.layer_size); 
     if(count_global > partition_point1 && count_global <= partition_point2){
 //        make_softmax_layer_CA(params.batch, params.inputs, groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss);
     }
@@ -472,8 +472,8 @@ cost_layer parse_cost(list *options, size_params params)
     layer.noobject_scale =  option_find_float_quiet(options, "noobj", 1);
     layer.thresh =  option_find_float_quiet(options, "thresh",0);
 
-    printf("parse_cost: %d, %d, %d, %f, %f, %f, %f\n", 
-            params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh); 
+    printf("parse_cost: %d, %d, %d, %f, %f, %f, %f %d\n", 
+            params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh, layer.layer_size); 
 
     if(count_global > partition_point1 && count_global <= partition_point2){
 //        make_cost_layer_CA(params.batch, params.inputs, type, scale, layer.ratio, layer.noobject_scale, layer.thresh);
@@ -539,8 +539,8 @@ maxpool_layer parse_maxpool(list *options, size_params params)
 
     maxpool_layer layer = make_maxpool_layer(batch,h,w,c,size,stride,padding);
 
-    printf("parse_maxpool: %d, %d, %d, %d, %d, %d, %d\n",
-        batch,h,w,c,size,stride,padding);
+    printf("parse_maxpool: %d, %d, %d, %d, %d, %d, %d, %d\n",
+        batch,h,w,c,size,stride,padding, layer.layer_size);
 
     if(count_global > partition_point1 && count_global <= partition_point2){
 //        make_maxpool_layer_CA(batch,h,w,c,size,stride,padding);
@@ -560,8 +560,8 @@ avgpool_layer parse_avgpool(list *options, size_params params)
 
     avgpool_layer layer = make_avgpool_layer(batch,w,h,c);
 
-    printf("parse_avgpool: %d, %d, %d, %d\n",
-        batch,h,w,c);
+    printf("parse_avgpool: %d, %d, %d, %d, %d\n",
+        batch,h,w,c,layer.layer_size);
 
 
     if(count_global > partition_point1 && count_global <= partition_point2){
@@ -582,8 +582,8 @@ dropout_layer parse_dropout(list *options, size_params params, float *net_prev_o
     layer.output = net_prev_output;
     layer.delta = net_prev_delta;
 
-    printf("parse_dropout: %d, %d, %f, %d, %d, %d, %d, %x, %x\n",
-            params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta); 
+    printf("parse_dropout: %d, %d, %f, %d, %d, %d, %d, %x, %x, Size : %d\n",
+            params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta, layer.layer_size); 
 
     if(count_global > partition_point1 && count_global <= partition_point2){
 //        make_dropout_layer_CA(params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta);
@@ -955,6 +955,14 @@ network *parse_network_cfg(char *filename)
             params.c = l.out_c;
             params.inputs = l.outputs;
         }
+
+        // change the max layer size
+        if(n > partition_point1) {
+            if (net->max_size < l.layer_size) {
+                net->max_size = l.layer_size;   
+            }
+        }
+        ///////
     }
 
     free_list(sections);
@@ -985,6 +993,9 @@ network *parse_network_cfg(char *filename)
 #endif
     }
 
+
+    // Print Max size
+    printf("Max Layer Size : %d\n", net->max_size);
     return net;
 }
 

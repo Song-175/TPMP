@@ -10,6 +10,8 @@
 
 #include "parser.h"
 
+#include "analyzer.h"//For analyzer
+
 #include <stdio.h>
 #include <time.h>
 
@@ -182,6 +184,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 {
     int i;
     convolutional_layer l = {0};
+    ////////////////////
+    l.layer_size = sizeof(l);
+    ////////////////////
     l.type = CONVOLUTIONAL;
 
     l.groups = groups;
@@ -197,11 +202,16 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.pad = padding;
     l.batch_normalize = batch_normalize;
 
-    l.weights = calloc(c/groups*n*size*size, sizeof(float));
-    l.weight_updates = calloc(c/groups*n*size*size, sizeof(float));
+    //l.weights = calloc(c/groups*n*size*size, sizeof(float));
+    l.weights = an_calloc(&(l.layer_size), c/groups*n*size*size, sizeof(float));
+    //l.weight_updates = calloc(c/groups*n*size*size, sizeof(float));
+    l.weight_updates = an_calloc(&(l.layer_size), c/groups*n*size*size, sizeof(float));
+    
 
-    l.biases = calloc(n, sizeof(float));
-    l.bias_updates = calloc(n, sizeof(float));
+    //l.biases = calloc(n, sizeof(float));
+    l.biases = an_calloc(&(l.layer_size), n, sizeof(float));
+    //l.bias_updates = calloc(n, sizeof(float));
+    l.bias_updates = an_calloc(&(l.layer_size), n, sizeof(float));
 
     l.nweights = c/groups*n*size*size;
     l.nbiases = n;
@@ -224,47 +234,70 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.outputs = l.out_h * l.out_w * l.out_c;
     l.inputs = l.w * l.h * l.c;
 
-    l.output = calloc(l.batch*l.outputs, sizeof(float));
-    l.delta  = calloc(l.batch*l.outputs, sizeof(float));
+    //l.output = calloc(l.batch*l.outputs, sizeof(float));
+    l.output = an_calloc(&(l.layer_size), l.batch*l.outputs, sizeof(float));
+    //l.delta  = calloc(l.batch*l.outputs, sizeof(float));
+    l.delta  = an_calloc(&(l.layer_size), l.batch*l.outputs, sizeof(float));
 
     l.forward = forward_convolutional_layer;
     l.backward = backward_convolutional_layer;
     l.update = update_convolutional_layer;
     if(binary){
-        l.binary_weights = calloc(l.nweights, sizeof(float));
-        l.cweights = calloc(l.nweights, sizeof(char));
-        l.scales = calloc(n, sizeof(float));
+        //l.binary_weights = calloc(l.nweights, sizeof(float));
+        //l.cweights = calloc(l.nweights, sizeof(char));
+        //l.scales = calloc(n, sizeof(float));
+        l.binary_weights = an_calloc(&(l.layer_size), l.nweights, sizeof(float));
+        l.cweights = an_calloc(&(l.layer_size), l.nweights, sizeof(char));
+        l.scales = an_calloc(&(l.layer_size), n, sizeof(float));
     }
     if(xnor){
-        l.binary_weights = calloc(l.nweights, sizeof(float));
-        l.binary_input = calloc(l.inputs*l.batch, sizeof(float));
+        //l.binary_weights = calloc(l.nweights, sizeof(float));
+        //l.binary_input = calloc(l.inputs*l.batch, sizeof(float));
+        l.binary_weights = an_calloc(&(l.layer_size), l.nweights, sizeof(float));
+        l.binary_input = an_calloc(&(l.layer_size), l.inputs*l.batch, sizeof(float));
     }
 
     if(batch_normalize){
-        l.scales = calloc(n, sizeof(float));
-        l.scale_updates = calloc(n, sizeof(float));
+        //l.scales = calloc(n, sizeof(float));
+        //l.scale_updates = calloc(n, sizeof(float));
+        l.scales = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.scale_updates = an_calloc(&(l.layer_size), n, sizeof(float));
         for(i = 0; i < n; ++i){
             l.scales[i] = 1;
         }
 
-        l.mean = calloc(n, sizeof(float));
-        l.variance = calloc(n, sizeof(float));
+        //l.mean = calloc(n, sizeof(float));
+        //l.variance = calloc(n, sizeof(float));
+        l.mean = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.variance = an_calloc(&(l.layer_size), n, sizeof(float));
 
-        l.mean_delta = calloc(n, sizeof(float));
-        l.variance_delta = calloc(n, sizeof(float));
+        //l.mean_delta = calloc(n, sizeof(float));
+        //l.variance_delta = calloc(n, sizeof(float));
+        l.mean_delta = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.variance_delta = an_calloc(&(l.layer_size), n, sizeof(float));
 
-        l.rolling_mean = calloc(n, sizeof(float));
-        l.rolling_variance = calloc(n, sizeof(float));
-        l.x = calloc(l.batch*l.outputs, sizeof(float));
-        l.x_norm = calloc(l.batch*l.outputs, sizeof(float));
+        //l.rolling_mean = calloc(n, sizeof(float));
+        //l.rolling_variance = calloc(n, sizeof(float));
+        //l.x = calloc(l.batch*l.outputs, sizeof(float));
+        //l.x_norm = calloc(l.batch*l.outputs, sizeof(float));
+        l.rolling_mean = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.rolling_variance = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.x = an_calloc(&(l.layer_size), l.batch*l.outputs, sizeof(float));
+        l.x_norm = an_calloc(&(l.layer_size), l.batch*l.outputs, sizeof(float));
     }
     if(adam){
-        l.m = calloc(l.nweights, sizeof(float));
-        l.v = calloc(l.nweights, sizeof(float));
-        l.bias_m = calloc(n, sizeof(float));
-        l.scale_m = calloc(n, sizeof(float));
-        l.bias_v = calloc(n, sizeof(float));
-        l.scale_v = calloc(n, sizeof(float));
+        //l.m = calloc(//l.nweights, sizeof(float));
+        //l.v = calloc(//l.nweights, sizeof(float));
+        //l.bias_m = calloc(n, sizeof(float));
+        //l.scale_m = calloc(n, sizeof(float));
+        //l.bias_v = calloc(n, sizeof(float));
+        //l.scale_v = calloc(n, sizeof(float));
+        l.m = an_calloc(&(l.layer_size), l.nweights, sizeof(float));
+        l.v = an_calloc(&(l.layer_size), l.nweights, sizeof(float));
+        l.bias_m = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.scale_m = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.bias_v = an_calloc(&(l.layer_size), n, sizeof(float));
+        l.scale_v = an_calloc(&(l.layer_size), n, sizeof(float));
     }
 
 #ifdef GPU
@@ -338,6 +371,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     }else{
         fprintf(stderr, "conv_TA%5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d  %5.3f BFLOPs\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c, (2.0 * l.n * l.size*l.size*l.c/l.groups * l.out_h*l.out_w)/1000000000.);
     }
+
 
     return l;
 }
