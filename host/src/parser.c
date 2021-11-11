@@ -582,7 +582,7 @@ dropout_layer parse_dropout(list *options, size_params params, float *net_prev_o
     layer.output = net_prev_output;
     layer.delta = net_prev_delta;
 
-    printf("parse_dropout: %d, %d, %f, %d, %d, %d, %d, %x, %x, Size : %d\n",
+    printf("parse_dropout: %d, %d, %f, %d, %d, %d, %d, 0x%x, 0x%x, Size : %d\n",
             params.batch, params.inputs, probability, params.w, params.h, params.c, net_prev_output, net_prev_delta, layer.layer_size); 
 
     if(count_global > partition_point1 && count_global <= partition_point2){

@@ -255,29 +255,45 @@ void forward_network(network *netp)
         layer l = net.layers[i];
 
         if(i > partition_point1 && i <= partition_point2){
-
-            if(l.type == CONNECTED){ 
-                // originally last argument is adam, which is derived from params.net->adam
-                make_connected_layer_CA(l.batch, l.inputs, l.outputs, l.activation, l.batch_normalize, 0);
-            }else if(l.type == SOFTMAX){
-                make_softmax_layer_CA(l.batch, l.inputs, l.groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss);
-            }else if(l.type == DROPOUT){
-                make_dropout_layer_CA(l.batch, l.inputs, l.probability, l.out_w, l.out_h, l.out_c, l.output, l.delta); 
-            }else if(l.type == COST){
-                make_cost_layer_CA(l.batch, l.inputs, l.cost_type, l.scale, l.ratio, l.noobject_scale, l.thresh);
+            int totalSize = 0;
+            int n = i;
+            printf("Max Size : %d\n", net.max_size);
+            while(totalSize < net.max_size && n <= partition_point2) {
+                printf("Layre[%d] Size : %d\n", n, net.layers[n].layer_size);
+                totalSize += net.layers[n].layer_size;
+                n++;
             }
+            printf("%d layers will be executed in TEE [%d, %d] Total Size %d\n", n-i, i, n-1, totalSize);
 
-            if(l.type == CONNECTED){
-                int layer_TA_i = i - partition_point1 - 1;
-                transfer_weights_CA(l.biases, l.outputs, layer_TA_i, 'b', 0);
-                transfer_weights_CA(l.weights, l.outputs*l.inputs, layer_TA_i, 'w', l.transpose);
-
-                if (l.batch_normalize && (!l.dontloadscales)){
-                    transfer_weights_CA(l.scales, l.outputs, layer_TA_i, 's', 0);
-                    transfer_weights_CA(l.rolling_mean, l.outputs, layer_TA_i, 'm', 0);
-                    transfer_weights_CA(l.rolling_variance, l.outputs, layer_TA_i, 'v', 0);
+            for(; i<n; i++){
+                printf("Layer[%d] will be made in TEE\n", i);
+                l = net.layers[i];
+                if(l.type == CONNECTED){ 
+                    // originally last argument is adam, which is derived from params.net->adam
+                    make_connected_layer_CA(l.batch, l.inputs, l.outputs, l.activation, l.batch_normalize, 0);
+                }else if(l.type == SOFTMAX){
+                    make_softmax_layer_CA(l.batch, l.inputs, l.groups, l.temperature, l.w, l.h, l.c, l.spatial, l.noloss);
+                }else if(l.type == DROPOUT){
+                    make_dropout_layer_CA(l.batch, l.inputs, l.probability, l.out_w, l.out_h, l.out_c, l.output, l.delta); 
+                }else if(l.type == COST){
+                    make_cost_layer_CA(l.batch, l.inputs, l.cost_type, l.scale, l.ratio, l.noobject_scale, l.thresh);
                 }
+
+                if(l.type == CONNECTED){
+                    int layer_TA_i = i - partition_point1 - 1;
+                    transfer_weights_CA(l.biases, l.outputs, layer_TA_i, 'b', 0);
+                    transfer_weights_CA(l.weights, l.outputs*l.inputs, layer_TA_i, 'w', l.transpose);
+    
+                    if (l.batch_normalize && (!l.dontloadscales)){
+                        transfer_weights_CA(l.scales, l.outputs, layer_TA_i, 's', 0);
+                        transfer_weights_CA(l.rolling_mean, l.outputs, layer_TA_i, 'm', 0);
+                        transfer_weights_CA(l.rolling_variance, l.outputs, layer_TA_i, 'v', 0);
+                    }
+                }
+                printf("Layer[%d] was made in TEE\n", i);
             }
+            i-=1;
+            printf("%d layers was made in TEE\n", (i-n)+1);
     
             forward_network_CA(net.input, l.inputs, net.batch, net.train);
 
