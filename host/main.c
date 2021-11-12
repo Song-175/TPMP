@@ -537,7 +537,7 @@ void save_weights_CA(float *vec, int length, int layer_i, char type)
 
 
 
-void forward_network_CA(float *net_input, int l_inputs, int net_batch, int net_train)
+void forward_network_CA(float *net_input, int l_inputs, int net_batch, int net_train, int count)
 {
     //invoke op and transfer paramters
     TEEC_Operation op;
@@ -545,18 +545,23 @@ void forward_network_CA(float *net_input, int l_inputs, int net_batch, int net_t
     TEEC_Result res;
 
     memset(&op, 0, sizeof(op));
-    op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_VALUE_INPUT,
+    op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_MEMREF_TEMP_INPUT,
                                      TEEC_NONE, TEEC_NONE);
 
     float *params0 = malloc(sizeof(float)*l_inputs*net_batch);
     for(int z=0; z<l_inputs*net_batch; z++){
         params0[z] = net_input[z];
     }
-    int params1 = net_train;
+    //int params1 = net_train;
+    int passint[2];
+    passint[0] = net_train;
+    passint[1] = count;
 
     op.params[0].tmpref.buffer = params0;
     op.params[0].tmpref.size = sizeof(float) * l_inputs*net_batch;
-    op.params[1].value.a = params1;
+    //op.params[1].value.a = params1;
+    op.params[1].tmpref.buffer = passint;
+    op.params[1].tmpref.size = sizeof(passint);
 
     /////////  debug_plot  /////////
     if(debug_plot_bool == 1){

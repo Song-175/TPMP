@@ -500,7 +500,7 @@ static TEE_Result forward_network_TA_params(uint32_t param_types,
                                           TEE_Param params[4])
 {
     uint32_t exp_param_types = TEE_PARAM_TYPES( TEE_PARAM_TYPE_MEMREF_INPUT,
-                                               TEE_PARAM_TYPE_VALUE_INPUT,
+                                               TEE_PARAM_TYPE_MEMREF_INPUT,
                                                TEE_PARAM_TYPE_NONE,
                                                TEE_PARAM_TYPE_NONE);
     //TEE_PARAM_TYPE_VALUE_INPUT
@@ -511,7 +511,11 @@ static TEE_Result forward_network_TA_params(uint32_t param_types,
     return TEE_ERROR_BAD_PARAMETERS;
 
     float *net_input = params[0].memref.buffer;
-    int net_train = params[1].value.a;
+    //int net_train = params[1].value.a;
+    int *passed_int = params[1].memref.buffer;
+    int net_train = passed_int[0];
+    int layer_count = passed_int[1];
+
 
     netta.input = net_input;
     netta.train = net_train;
@@ -519,7 +523,11 @@ static TEE_Result forward_network_TA_params(uint32_t param_types,
     if(debug_summary_com == 1){
         summary_array("forward_network / net.input", netta.input, params[0].memref.size / sizeof(float));
     }
-    forward_network_TA();
+
+    printf("[%d] layers will be executed\n", layer_count);
+
+    for(int i=0; i<layer_count; i++)
+        forward_network_TA();
 
     return TEE_SUCCESS;
 }
@@ -853,9 +861,11 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
     if (param_types != exp_param_types)
         return TEE_ERROR_BAD_PARAMETERS;
 
+    printf("Variables initializing...\n");
     float *params0 = params[0].memref.buffer;
     int buffersize = params[0].memref.size / sizeof(float);
 
+    printf("Normalizing...\n");
     if(norm_output){
         // remove confidence scores
         float maxconf; maxconf = 0.00001f;
@@ -871,6 +881,7 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
         ta_net_output[maxidx] = 1.00f;
     }
 
+    printf("Setting the return value...\n");
     for(int z=0; z<buffersize; z++){
         params0[z] = ta_net_output[z];
     }

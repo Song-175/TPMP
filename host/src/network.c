@@ -265,9 +265,9 @@ void forward_network(network *netp)
             }
             printf("%d layers will be executed in TEE [%d, %d] Total Size %d\n", n-i, i, n-1, totalSize);
 
-            for(; i<n; i++){
-                printf("Layer[%d] will be made in TEE\n", i);
-                l = net.layers[i];
+            int j;
+            for(j=i; j<n; j++){
+                l = net.layers[j];
                 if(l.type == CONNECTED){ 
                     // originally last argument is adam, which is derived from params.net->adam
                     make_connected_layer_CA(l.batch, l.inputs, l.outputs, l.activation, l.batch_normalize, 0);
@@ -280,7 +280,7 @@ void forward_network(network *netp)
                 }
 
                 if(l.type == CONNECTED){
-                    int layer_TA_i = i - partition_point1 - 1;
+                    int layer_TA_i = j - partition_point1 - 1;
                     transfer_weights_CA(l.biases, l.outputs, layer_TA_i, 'b', 0);
                     transfer_weights_CA(l.weights, l.outputs*l.inputs, layer_TA_i, 'w', l.transpose);
     
@@ -290,17 +290,17 @@ void forward_network(network *netp)
                         transfer_weights_CA(l.rolling_variance, l.outputs, layer_TA_i, 'v', 0);
                     }
                 }
-                printf("Layer[%d] was made in TEE\n", i);
+                printf("Layer[%d] was made in TEE\n", j);
             }
-            i-=1;
-            printf("%d layers was made in TEE\n", (i-n)+1);
+            printf("%d layers was made in TEE\n", (j-i));
     
-            forward_network_CA(net.input, l.inputs, net.batch, net.train);
+            forward_network_CA(net.input, l.inputs, net.batch, net.train, (j-i));
 
             forward_network_back_CA(l.output, l.outputs, net.batch);
 
             net.input = l.output;
-
+    
+            i = j-1;
 /*            
             // forward all the others in TEE
             if(debug_summary_com == 1){
