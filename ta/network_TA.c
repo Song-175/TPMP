@@ -84,7 +84,7 @@ void forward_network_TA()
   
     //////
     if(layernum > 0)
-        //free_layer_TA(netta.layers[netta.index]);
+        free_layer_TA(netta.layers[netta.index]);
 
     netta.index = layernum;
 
@@ -95,9 +95,7 @@ void forward_network_TA()
         fill_cpu_TA(l.outputs * l.batch, 0, l.delta, 1);
     }
 
-    printf("Before forward\n");
     l.forward_TA(l, netta);
-    printf("After forward\n");
 
     if(debug_summary_pass == 1){
         summary_array("forward_network / l.output", l.output, l.outputs*netta.batch);

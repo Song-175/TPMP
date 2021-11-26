@@ -957,11 +957,11 @@ network *parse_network_cfg(char *filename)
         }
 
         // change the max layer size
-        if(n > partition_point1) {
+        /*if(n > partition_point1) {
             if (net->max_size < l.layer_size) {
-                net->max_size = l.layer_size;   
+                //net->max_size = l.layer_size;   
             }
-        }
+        }*/
         ///////
     }
 
@@ -992,9 +992,9 @@ network *parse_network_cfg(char *filename)
         //netta.workspace = net->workspace;
 #endif
     }
-
-
+    
     // Print Max size
+    net->max_size = 4*1024*1024;
     printf("Max Layer Size : %d\n", net->max_size);
     return net;
 }

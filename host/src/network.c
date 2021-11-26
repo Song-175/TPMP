@@ -292,7 +292,9 @@ void forward_network(network *netp)
                 }
                 printf("Layer[%d] was made in TEE\n", j);
             }
-            printf("%d layers was made in TEE\n", (j-i));
+            printf("%d layers were made in TEE\n", (j-i));
+
+            l = net.layers[i]; /////////////////////
     
             forward_network_CA(net.input, l.inputs, net.batch, net.train, (j-i));
 
