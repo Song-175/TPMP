@@ -60,7 +60,10 @@ load_args get_base_args(network *net)
 
 network *load_network(char *cfg, char *weights, int clear)
 {
+    clock_t start = clock();
     network *net = parse_network_cfg(cfg);
+    clock_t end = clock();
+    printf("Parsing Time : %lf\n", (double)(end-start)/CLOCKS_PER_SEC);
 
 
     if(weights && weights[0] != 0){
@@ -296,7 +299,10 @@ void forward_network(network *netp)
 
             l = net.layers[i]; /////////////////////
     
+            clock_t t1 = clock();;
             forward_network_CA(net.input, l.inputs, net.batch, net.train, (j-i));
+            clock_t t2 = clock();
+            printf("ForwardTime : %ld\n", (double)(t2-t1)/CLOCKS_PER_SEC);
 
             forward_network_back_CA(l.output, l.outputs, net.batch);
 

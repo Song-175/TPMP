@@ -83,6 +83,8 @@ void forward_network_TA()
     roundnum++;
   
     //////
+    TEE_Time t;
+    TEE_GetSystemTime(&t);
     if(layernum > 0)
         free_layer_TA(netta.layers[netta.index]);
 
@@ -115,6 +117,11 @@ void forward_network_TA()
         }
     }
 
+    TEE_Time t2;
+    TEE_GetSystemTime(&t2);
+    printf("Layer[%d] : \n\
+                Start : %ld sec, %ld mil\n\
+                End   : %ld sec, %ld mil\n", layernum, t.seconds, t.millis, t2.seconds, t2.millis);
     layernum++;
 
     if(layernum == netta.n){    

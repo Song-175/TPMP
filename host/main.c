@@ -362,6 +362,9 @@ void make_dropout_layer_CA(int batch, int inputs, float probability, int w, int 
 void make_connected_layer_CA(int batch, int inputs, int outputs, ACTIVATION activation, int batch_normalize, int adam)
 {
     //invoke op and transfer paramters
+    clock_t t1, t2;
+    t1 = clock();
+
     TEEC_Operation op;
     uint32_t origin;
     TEEC_Result res;
@@ -392,6 +395,8 @@ void make_connected_layer_CA(int batch, int inputs, int outputs, ACTIVATION acti
     if (res != TEEC_SUCCESS)
     errx(1, "TEEC_InvokeCommand(FC) failed 0x%x origin 0x%x",
          res, origin);
+    t2 = clock();
+    printf("ConnectedLayer : %lf\n", (double)(t2-t1)/CLOCKS_PER_SEC);
 }
 
 void make_softmax_layer_CA(int batch, int inputs, int groups, float temperature, int w, int h, int c, int spatial, int noloss)
