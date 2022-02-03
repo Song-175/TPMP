@@ -524,7 +524,6 @@ static TEE_Result forward_network_TA_params(uint32_t param_types,
         summary_array("forward_network / net.input", netta.input, params[0].memref.size / sizeof(float));
     }
 
-    printf("[%d] layers will be executed\n", layer_count);
 
     for(int i=0; i<layer_count; i++)
         forward_network_TA();
@@ -572,7 +571,6 @@ static TEE_Result forward_network_back_TA_params(uint32_t param_types,
     float *params0 = params[0].memref.buffer;
     int buffersize = params[0].memref.size / sizeof(float);
 
-    printf("forward_network_TA_params: layernum:%d\n", layernum-1);
     for(int z=0; z<buffersize; z++){
 //        params0[z] = netta.layers[netta.n-1].output[z];
         params0[z] = netta.layers[layernum-1]->output[z];
@@ -861,11 +859,9 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
     if (param_types != exp_param_types)
         return TEE_ERROR_BAD_PARAMETERS;
 
-    printf("Variables initializing...\n");
     float *params0 = params[0].memref.buffer;
     int buffersize = params[0].memref.size / sizeof(float);
 
-    printf("Normalizing...\n");
     if(norm_output){
         // remove confidence scores
         float maxconf; maxconf = 0.00001f;
@@ -881,7 +877,6 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
         ta_net_output[maxidx] = 1.00f;
     }
 
-    printf("Setting the return value...\n");
     for(int z=0; z<buffersize; z++){
         params0[z] = ta_net_output[z];
     }
@@ -898,7 +893,6 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 {
     (void)&sess_ctx; /* Unused parameter */
     
-    printf("TA_InvokeCommandEntryPoint: %d\n", cmd_id);
 
     switch (cmd_id) {
         case MAKE_NETWORK_CMD:

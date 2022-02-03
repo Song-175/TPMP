@@ -76,21 +76,18 @@ void forward_network_TA()
         ta_net_delta = malloc(sizeof(float) * netta.layers[0]->inputs * netta.layers[0]->batch);
 
         if(netta.workspace_size){
-            printf("workspace_size=%ld\n", netta.workspace_size);
+            //printf("workspace_size=%ld\n", netta.workspace_size);
             netta.workspace = calloc(1, netta.workspace_size);
         }
     }
     roundnum++;
   
     //////
-    TEE_Time t;
-    TEE_GetSystemTime(&t);
     if(layernum > 0)
         free_layer_TA(netta.layers[netta.index]);
 
     netta.index = layernum;
 
-    printf("LayerNum : %d\n", layernum);
     layer_TA l = *(netta.layers[layernum]);
 
     if(l.delta){
@@ -117,11 +114,6 @@ void forward_network_TA()
         }
     }
 
-    TEE_Time t2;
-    TEE_GetSystemTime(&t2);
-    printf("Layer[%d] : \n\
-                Start : %ld sec, %ld mil\n\
-                End   : %ld sec, %ld mil\n", layernum, t.seconds, t.millis, t2.seconds, t2.millis);
     layernum++;
 
     if(layernum == netta.n){    

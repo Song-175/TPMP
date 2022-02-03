@@ -264,6 +264,10 @@ void forward_network(network *netp)
             while(totalSize < net.max_size && n <= partition_point2) {
                 printf("Layre[%d] Size : %d\n", n, net.layers[n].layer_size);
                 totalSize += net.layers[n].layer_size;
+                if(totalSize > net.max_size) {
+                    totalSize -= net.layers[n].layer_size;
+                    break;
+                }
                 n++;
             }
             printf("%d layers will be executed in TEE [%d, %d] Total Size %d\n", n-i, i, n-1, totalSize);

@@ -95,9 +95,6 @@ void update_connected_layer_TA_new(layer_TA l, update_args_TA a)
 layer_TA *make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVATION_TA activation, int batch_normalize, int adam)
 {
     int i;
-    TEE_Time t1;
-    TEE_GetSystemTime(&t1);
-    printf("[Calloc] Start : %d.%ds\n", t1.seconds, t1.millis);
     layer_TA *l = calloc(1, sizeof(layer_TA));
     l->learning_rate_scale = 1;
     l->type = CONNECTED_TA;
@@ -207,9 +204,6 @@ layer_TA *make_connected_layer_TA_new(int batch, int inputs, int outputs, ACTIVA
     //IMSG("connected_TA                         %4d  ->  %4d\n", inputs, outputs);
 
     //printf("[connected layer TA] %d bytes allocated\n", l->layer_size);
-    TEE_Time t2;
-    TEE_GetSystemTime(&t2);
-    printf("[Calloc] End : %d.%ds\n", t2.seconds, t2.millis);
 
     return l;
 }

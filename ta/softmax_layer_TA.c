@@ -50,8 +50,6 @@ softmax_layer_TA *make_softmax_layer_TA_new(int batch, int inputs, int groups, f
 
     l->layer_size += sizeof(softmax_layer_TA);
 
-    printf("[softmax layer TA] %d bytes allocated\n", l->layer_size);
-
     return l;
 }
 
