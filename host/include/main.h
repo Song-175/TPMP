@@ -33,6 +33,8 @@
 
 #define MAKE_AVG_CMD 21
 
+#define CHECK_WS_CMD    99
+
 #define TA_DARKNETP_UUID \
 	{ 0x7fc5c039, 0x0542, 0x4ee1, \
 		{ 0x80, 0xaf, 0xb4, 0xea, 0xb2, 0xf1, 0x99, 0x8d} }
@@ -92,5 +94,8 @@ void transfer_weights_CA(float *vec, int length, int layer_i, char type, int add
 void save_weights_CA(float *vec, int length, int layer_i, char type);
 
 void summary_array(char *print_name, float *arr, int n);
+
+// Temp
+void check_wc_CA(void);
 
 #endif

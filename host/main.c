@@ -947,6 +947,23 @@ void terminate_tee_session()
     TEEC_FinalizeContext(&ctx);
 }
 
+//Temp
+void check_ws_CA(void) {
+    TEEC_Operation op;
+    uint32_t origin;
+    TEEC_Result res;
+
+    clock_t t1 = clock();
+    res = TEEC_InvokeCommand(&sess, CHECK_WS_CMD, &op, &origin);
+    clock_t t2 = clock();
+    printf("SpendTime : %lf\n", (double)(t2-t1)/CLOCKS_PER_SEC);
+
+    if(res != TEEC_SUCCESS)
+        errx(1, "TEEC_InvokeCommand(return) failed 0x%x origin 0x%x",
+             res, origin);
+}
+
+
 
 
 int main(int argc, char **argv)
@@ -954,6 +971,7 @@ int main(int argc, char **argv)
 
     printf("Prepare session with the TA\n");
     prepare_tee_session();
+    check_ws_CA();
 
     printf("Begin darknet\n");
     darknet_main(argc, argv);

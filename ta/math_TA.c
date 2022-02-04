@@ -146,7 +146,7 @@ double asr0(double a, double b, double eps,int flag)
 
 double ta_ln(double x)
 {
-    printf("ta_ln : %ld\n", x);
+    //printf("ta_ln : %ld\n", x);
     return asr0(1,x,1e-8,1);
 }
 

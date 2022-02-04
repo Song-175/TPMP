@@ -41,6 +41,9 @@ extern int debug_summary_pass;
 
 #define MAKE_AVG_CMD 21
 
+// Temporary
+#define CHECK_WS_CMD    99
+
 void summary_array(char *print_name, float *arr, int n);
 
 #endif /*TA_DARKNETP_H*/

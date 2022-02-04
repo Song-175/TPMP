@@ -160,7 +160,7 @@ static TEE_Result make_netowork_TA_params(uint32_t param_types,
     make_network_TA(n, learning_rate, momentum, decay, time_steps, notruth, batch, subdivisions, random, adam, B1, B2, eps, h, w, c, inputs, max_crop, min_crop, max_ratio, min_ratio, center, clip, angle, aspect, saturation, exposure, hue, burn_in, power, max_batches);
 
     ///////////////////////
-    netta_truth = malloc(inputs * batch * sizeof(float));
+    //netta_truth = malloc(inputs * batch * sizeof(float));
 
     return TEE_SUCCESS;
 }
@@ -428,7 +428,7 @@ static TEE_Result make_cost_layer_TA_params(uint32_t param_types,
     netnum++;
 
     // allocate net.truth when the cost layer inside TEE
-    //netta_truth = malloc(inputs * batch * sizeof(float));
+    netta_truth = malloc(inputs * batch * sizeof(float));
     //free(netta_truth) needed
 
     return TEE_SUCCESS;
@@ -581,6 +581,7 @@ static TEE_Result forward_network_back_TA_params(uint32_t param_types,
     if(debug_summary_com == 1){
         summary_array("forward_network_back / l_pp2.output", netta.layers[netta.n-1]->output, buffersize);
     }
+    summary_array("forward_network_back / l_pp2.output", netta.layers[layernum-1]->output, buffersize);
     return TEE_SUCCESS;
 }
 
@@ -887,6 +888,12 @@ static TEE_Result net_output_return_TA_params(uint32_t param_types,
 
 }
 
+
+static TEE_Result check_ws_TA_params()
+{
+    return TEE_SUCCESS;
+}
+
 TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
                                       uint32_t cmd_id,
                                       uint32_t param_types, TEE_Param params[4])
@@ -957,6 +964,9 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
         case BACKWARD_BACK_ADD_CMD:
         return backward_network_back_TA_addidion_params(param_types, params);
+
+        case CHECK_WS_CMD:
+        return check_ws_TA_params();
 
 
         default:

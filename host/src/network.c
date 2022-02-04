@@ -60,10 +60,7 @@ load_args get_base_args(network *net)
 
 network *load_network(char *cfg, char *weights, int clear)
 {
-    clock_t start = clock();
     network *net = parse_network_cfg(cfg);
-    clock_t end = clock();
-    printf("Parsing Time : %lf\n", (double)(end-start)/CLOCKS_PER_SEC);
 
 
     if(weights && weights[0] != 0){
@@ -253,21 +250,26 @@ void forward_network(network *netp)
     //if(wssize)  update_net_agrv_CA(0, wssize, net.workspace);
 
     int i;
+    layer l;
     for(i = 0; i < net.n; ++i){
         net.index = i;
-        layer l = net.layers[i];
+        l = net.layers[i];
 
         if(i > partition_point1 && i <= partition_point2){
             int totalSize = 0;
             int n = i;
             printf("Max Size : %d\n", net.max_size);
+            if(i > partition_point1 + 1) {
+                totalSize += net.layers[n-1].layer_size;
+                printf("Layer %d is remain in TEE Size : %d\n", n-1, totalSize);
+            }
             while(totalSize < net.max_size && n <= partition_point2) {
-                printf("Layre[%d] Size : %d\n", n, net.layers[n].layer_size);
                 totalSize += net.layers[n].layer_size;
                 if(totalSize > net.max_size) {
                     totalSize -= net.layers[n].layer_size;
                     break;
                 }
+                printf("Layre[%d] Size : %d\n", n, net.layers[n].layer_size);
                 n++;
             }
             printf("%d layers will be executed in TEE [%d, %d] Total Size %d\n", n-i, i, n-1, totalSize);
@@ -302,15 +304,11 @@ void forward_network(network *netp)
             printf("%d layers were made in TEE\n", (j-i));
 
             l = net.layers[i]; /////////////////////
-    
-            clock_t t1 = clock();;
+
             forward_network_CA(net.input, l.inputs, net.batch, net.train, (j-i));
-            clock_t t2 = clock();
-            printf("ForwardTime : %ld\n", (double)(t2-t1)/CLOCKS_PER_SEC);
 
-            forward_network_back_CA(l.output, l.outputs, net.batch);
-
-            net.input = l.output;
+            //forward_network_back_CA(l.output, l.outputs, net.batch);
+            //net.input = l.output;
     
             i = j-1;
 /*            
@@ -358,6 +356,7 @@ void forward_network(network *netp)
             }
         }
     }
+    forward_network_back_CA(l.output, l.outputs, net.batch);
 
     calc_network_cost(netp);
 }

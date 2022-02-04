@@ -83,11 +83,14 @@ void forward_network_TA()
     roundnum++;
   
     //////
-    if(layernum > 0)
+    if(layernum > 0) {
+        netta.input = netta.layers[netta.index]->output;
         free_layer_TA(netta.layers[netta.index]);
+    }
 
     netta.index = layernum;
 
+    int w;
     layer_TA l = *(netta.layers[layernum]);
 
     if(l.delta){
@@ -100,7 +103,7 @@ void forward_network_TA()
         summary_array("forward_network / l.output", l.output, l.outputs*netta.batch);
     }
 
-    netta.input = l.output;
+    //netta.input = l.output;
 
     if(l.truth) {
         netta.truth = l.output;
