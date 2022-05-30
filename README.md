@@ -1,3 +1,66 @@
+`install repo with prerequistites`
+`git clone of TPMP`
+`make TPMP` 
+`if the make failed, the memory size need to be changed in 'darknet_example/TPMP/ta/user_ta_header~`
+`once the make is done, be ready to copy the conpiled file to SD Card using fdisk /dev/sdb`
+`follow the 'make help img'
+```
+$ fdisk /dev/sdx   # where sdx is the name of your sd-card
+   > p             # prints partition table
+   > d             # repeat until all partitions are deleted
+   > n             # create a new partition
+   > p             # create primary
+   > 1             # make it the first partition
+   > <enter>       # use the default sector
+   > +64M          # create a boot partition with 64MB of space
+   > n             # create rootfs partition
+   > p
+   > 2
+   > <enter>
+   > <enter>       # fill the remaining disk, adjust size to fit your needs
+   > t             # change partition type
+   > 1             # select first partition
+   > e             # use type 'e' (FAT16)
+   > a             # make partition bootable
+   > 1             # select first partition
+   > p             # double check everything looks right
+   > w             # write partition table to disk.
+
+//run the following as root
+mkfs.vfat -F16 -n BOOT /dev/sdb1
+mkdir -p /media/boot
+mount /dev/sdb1 /media/boot
+cd /media
+gunzip -cd /home/song/optee/build/../out-br/images/rootfs.cpio.gz | sudo cpio -idmv "boot/*"
+umount boot
+
+
+//run the following as root
+mkfs.ext4 -L rootfs /dev/sdb2
+y
+mkdir -p /media/rootfs
+mount /dev/sdb2 /media/rootfs
+cd rootfs
+gunzip -cd /home/song/optee/build/../out-br/images/rootfs.cpio.gz | sudo cpio -idmv
+rm -rf /media/rootfs/boot/*
+cd .. && umount rootfs
+```
+
+`put the SD Cards to RSP 3B+.`
+`plug the usb cable to machine(PC) and try picocom -b -115200 /dev/ttyUSB0.`
+`if the terminal ready, plug the power to the RSP 3b+.`
+`check the blinking green light on RSP 3b+.`
+`it will boot it up automatically and type root when it requires the login.`
+
+
+
+
+
+
+
+
+
+
 ![DarkneTZ](darknetz_logo.png)
 
 This is an application that runs several layers of a Deep Neural Network (DNN) model in TrustZone.
