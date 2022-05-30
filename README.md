@@ -1,9 +1,9 @@
-`install repo with prerequistites`
-`git clone of TPMP`
-`make TPMP` 
-`if the make failed, the memory size need to be changed in 'darknet_example/TPMP/ta/user_ta_header~`
-`once the make is done, be ready to copy the conpiled file to SD Card using fdisk /dev/sdb`
-`follow the 'make help img'
+`install repo with prerequistites`  
+`git clone of TPMP`  
+`make TPMP`   
+`if the make failed, the memory size need to be changed in 'darknet_example/TPMP/ta/user_ta_header~`  
+`once the make is done, be ready to copy the conpiled file to SD Card using fdisk /dev/sdb`  
+`follow the 'make help img`  
 ```
 $ fdisk /dev/sdx   # where sdx is the name of your sd-card
    > p             # prints partition table
