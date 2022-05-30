@@ -1,6 +1,6 @@
 `install repo with prerequistites`  
 `git clone of TPMP`  
-`make TPMP`   
+`make TPMP on build folder`   
 `if the make failed, the memory size need to be changed in 'darknet_example/TPMP/ta/user_ta_header~`  
 `once the make is done, be ready to copy the conpiled file to SD Card using fdisk /dev/sdb`  
 `follow the 'make help img`  
@@ -46,11 +46,11 @@ rm -rf /media/rootfs/boot/*
 cd .. && umount rootfs
 ```
 
-`put the SD Cards to RSP 3B+.`
-`plug the usb cable to machine(PC) and try picocom -b -115200 /dev/ttyUSB0.`
-`if the terminal ready, plug the power to the RSP 3b+.`
-`check the blinking green light on RSP 3b+.`
-`it will boot it up automatically and type root when it requires the login.`
+`put the SD Cards to RSP 3B+.`  
+`plug the usb cable to machine(PC) and try picocom -b -115200 /dev/ttyUSB0.`  
+`if the terminal ready, plug the power to the RSP 3b+.`  
+`check the blinking green light on RSP 3b+.`  
+`it will boot it up automatically and type root when it requires the login.`  
 
 
 
